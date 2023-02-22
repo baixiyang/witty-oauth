@@ -13,7 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "witty-koa": "^0.0.22"
+    "witty-koa": "^0.0.23"
   },
   "devDependencies": {
     "@types/lodash-es": "^4.17.6",

@@ -1,11 +1,11 @@
 import {
   bodyMiddleWare,
-  mongodbWare,
+  mongodbMiddleWare,
   responseMiddleWare,
   startServer,
-} from 'witty-koa/src';
-export function startOauth2Server({
-  mongodbUrl,
+} from 'witty-koa';
+export function startOauthServer({
+  // mongodbUrl,
   port = 5180,
   rootUser = { username: 'root', password: '123456' },
 }: {
@@ -19,10 +19,10 @@ export function startOauth2Server({
     middlewares: [
       responseMiddleWare(),
       bodyMiddleWare(),
-      mongodbWare({
-        url: mongodbUrl,
-        dbName: 'witty-oauth',
-      }),
+      // mongodbMiddleWare({
+      //   url: mongodbUrl,
+      //   dbName: 'witty-oauth',
+      // }),
     ],
   });
 }
