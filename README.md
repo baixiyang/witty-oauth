@@ -1,1 +1,1 @@
-# witty-oauth2
+# witty-oauth

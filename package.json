@@ -1,8 +1,8 @@
 {
-  "name": "witty-oauth2",
+  "name": "witty-oauth",
   "type": "module",
-  "version": "0.0.3",
-  "description": "witty-oauth2",
+  "version": "0.0.1",
+  "description": "witty-oauth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {

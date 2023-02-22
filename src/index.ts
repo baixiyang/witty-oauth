@@ -21,7 +21,7 @@ export function startOauth2Server({
       bodyMiddleWare(),
       mongodbWare({
         url: mongodbUrl,
-        dbName: 'witty-oauth2',
+        dbName: 'witty-oauth',
       }),
     ],
   });
