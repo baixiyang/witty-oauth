@@ -5,7 +5,7 @@ import {
   startServer,
 } from 'witty-koa';
 export function startOauthServer({
-  // mongodbUrl,
+  mongodbUrl,
   port = 5180,
   rootUser = { username: 'root', password: '123456' },
 }: {
@@ -19,10 +19,10 @@ export function startOauthServer({
     middlewares: [
       responseMiddleWare(),
       bodyMiddleWare(),
-      // mongodbMiddleWare({
-      //   url: mongodbUrl,
-      //   dbName: 'witty-oauth',
-      // }),
+      mongodbMiddleWare({
+        url: mongodbUrl,
+        dbName: 'witty-oauth',
+      }),
     ],
   });
 }
