@@ -1,28 +1,45 @@
 import {
   bodyMiddleWare,
-  mongodbMiddleWare,
   responseMiddleWare,
+  sessionMiddleWare,
   startServer,
 } from 'witty-koa';
-export function startOauthServer({
-  mongodbUrl,
-  port = 5180,
-  rootUser = { username: 'root', password: '123456' },
-}: {
-  port: number;
-  mongodbUrl: string;
-  rootUser: { username: string; password: string };
-}) {
-  startServer({
-    port,
-    controllers: [],
-    middlewares: [
-      responseMiddleWare(),
-      bodyMiddleWare(),
-      mongodbMiddleWare({
-        url: mongodbUrl,
-        dbName: 'witty-oauth',
-      }),
-    ],
+import { PrismaClient, Role, User } from '@prisma/client';
+import { readFile } from 'fs/promises';
+import { UserController } from './controllers';
+const config: { systemAdmins: User[] } = JSON.parse(
+  (await readFile(new URL('./config.json', import.meta.url))).toString()
+);
+export const prismaClient = new PrismaClient();
+
+for (const admin of config.systemAdmins) {
+  await prismaClient.user.upsert({
+    where: { username: admin.username },
+    update: {
+      username: admin.username,
+      password: admin.password,
+      role: Role.SYSTEM_ADMIN,
+    },
+    create: {
+      username: admin.username,
+      password: admin.password,
+      role: Role.SYSTEM_ADMIN,
+    },
   });
 }
+
+startServer({
+  port: 3000,
+  controllers: [new UserController()],
+  middlewares: [
+    sessionMiddleWare({
+      redisOptions: {
+        host: 'localhost',
+        port: 6379,
+        db: 0,
+      },
+    }),
+    responseMiddleWare(),
+    bodyMiddleWare(),
+  ],
+});
