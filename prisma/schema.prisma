@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @unique @default(uuid()) @db.VarChar(64)
+  username  String   @unique @db.VarChar(256)
+  password  String   @db.VarChar(256)
+  role      UserRole @default(USER)
+  email     String?  @unique
+  createdAt DateTime @default(now()) @db.Timestamp()
+  updatedAt DateTime @updatedAt @db.Timestamp()
+  clients   Client[]
+}
+
+enum UserRole {
+  USER
+  SYSTEM_ADMIN
+}
+
+model Client {
+  id           String   @id @unique @default(uuid()) @db.VarChar(64)
+  desc         String?  @db.VarChar(256)
+  clientId     String   @unique @db.VarChar(256)
+  type         ClientType @default(NORMAL)
+  clientSecret String  @db.VarChar(256)
+  redirectUris String[] @db.VarChar(512) @default([])
+  grantTypes   GrantTypes[] @default([authorization_code])
+  scopes       String[] @default(["all"])
+  createdAt    DateTime @default(now()) @db.Timestamp()
+  updatedAt    DateTime @updatedAt @db.Timestamp()
+  users        User[]
+}
+
+enum ClientType {
+  SYSTEM
+  NORMAL
+}
+
+enum GrantTypes {
+  authorization_code
+  refresh_token
+}

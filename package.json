@@ -1,13 +1,13 @@
 {
   "name": "witty-oauth",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "witty-oauth",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts'",
+    "dev": "prisma db push && nodemon --watch 'src/**/*.ts' --exec 'node --loader ts-node/esm --experimental-specifier-resolution=node src/index.ts'",
     "release": "tsc && npm publish"
   },
   "keywords": [],
@@ -15,9 +15,11 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^4.11.0",
-    "witty-koa": "0.0.38"
+    "crypto-js": "^4.1.1",
+    "witty-koa": "^0.0.43"
   },
   "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
     "@types/lodash-es": "^4.17.6",
     "@types/node": "18.11.18",
     "@typescript-eslint/eslint-plugin": "^5.48.1",

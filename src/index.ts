@@ -4,33 +4,15 @@ import {
   sessionMiddleWare,
   startServer,
 } from 'witty-koa';
-import { PrismaClient, Role, User } from '@prisma/client';
-import { readFile } from 'fs/promises';
-import { UserController } from './controllers';
-const config: { systemAdmins: User[] } = JSON.parse(
-  (await readFile(new URL('./config.json', import.meta.url))).toString()
-);
+import { PrismaClient } from '@prisma/client';
+import * as controllers from './controllers';
+import { init } from './init';
 export const prismaClient = new PrismaClient();
-
-for (const admin of config.systemAdmins) {
-  await prismaClient.user.upsert({
-    where: { username: admin.username },
-    update: {
-      username: admin.username,
-      password: admin.password,
-      role: Role.SYSTEM_ADMIN,
-    },
-    create: {
-      username: admin.username,
-      password: admin.password,
-      role: Role.SYSTEM_ADMIN,
-    },
-  });
-}
+await init();
 
 startServer({
-  port: 3000,
-  controllers: [new UserController()],
+  port: 1111,
+  controllers: Object.values(controllers),
   middlewares: [
     sessionMiddleWare({
       redisOptions: {
