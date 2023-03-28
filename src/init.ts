@@ -1,12 +1,9 @@
 import { prismaClient } from './index';
-import { Client, ClientType, User, UserRole } from '@prisma/client';
+import { ClientType, UserRole } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
-import { readFile } from 'fs/promises';
+import config from './config';
 
 export async function init() {
-  const config: { systemAdminUsers: User[]; systemClient: Client } = JSON.parse(
-    (await readFile(new URL('./config.json', import.meta.url))).toString()
-  );
   const systemClient = config.systemClient;
   const systemAdminUsers = config.systemAdminUsers;
   await prismaClient.$transaction([

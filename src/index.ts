@@ -7,17 +7,25 @@ import {
 import { PrismaClient } from '@prisma/client';
 import * as controllers from './controllers';
 import { init } from './init';
+import Redis from 'ioredis';
+import config from './config';
+
 export const prismaClient = new PrismaClient();
+export const redisClient = new Redis({
+  host: config.redis.host,
+  port: config.redis.port,
+  db: 5555,
+});
 await init();
 
 startServer({
-  port: 1111,
+  port: 5555,
   controllers: Object.values(controllers),
   middlewares: [
     sessionMiddleWare({
       redisOptions: {
-        host: 'localhost',
-        port: 6379,
+        host: config.redis.host,
+        port: config.redis.port,
         db: 0,
       },
     }),

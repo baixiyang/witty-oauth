@@ -16,7 +16,7 @@
   "dependencies": {
     "@prisma/client": "^4.11.0",
     "crypto-js": "^4.1.1",
-    "witty-koa": "^0.0.43"
+    "witty-koa": "^0.0.48"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",

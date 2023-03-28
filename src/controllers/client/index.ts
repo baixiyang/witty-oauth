@@ -13,7 +13,7 @@ import { prismaClient } from '../../index';
 import { Client, ClientType } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
 
-@Controller('/oauth/client')
+@Controller('/client')
 export class ClientController {
   select = {
     id: true,
