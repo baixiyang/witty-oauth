@@ -13,7 +13,7 @@ import { prismaClient } from '../../index';
 import { UserRole, User } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
 
-@Controller('/user')
+@Controller('/admin/user')
 export class UserController {
   select = { id: true, username: true, email: true, role: true };
   @Post()

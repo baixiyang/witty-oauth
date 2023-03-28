@@ -34,7 +34,7 @@ model Client {
   type         ClientType @default(NORMAL)
   redirectUris String[] @db.VarChar(512) @default([])
   grantTypes   GrantType[] @default([authorization_code, refresh_token, client_credentials])
-  scopes       String[] @default(["all"])
+  scopes       ClientScope[] @default([read, white])
   createdAt    DateTime @default(now()) @db.Timestamp()
   updatedAt    DateTime @updatedAt @db.Timestamp()
   users        User[]
@@ -43,6 +43,11 @@ model Client {
 enum ClientType {
   SYSTEM
   NORMAL
+}
+
+enum ClientScope {
+  read
+  white
 }
 
 // 授权类型

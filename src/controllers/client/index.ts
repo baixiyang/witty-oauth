@@ -13,21 +13,21 @@ import { prismaClient } from '../../index';
 import { Client, ClientType } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
 
-@Controller('/client')
+@Controller('/admin/client')
 export class ClientController {
   select = {
     id: true,
     desc: true,
-    clientId: true,
+    client_id: true,
     type: true,
   };
   @Post()
   async create(
-    @Body() @ParamRequired() @ParamRequired('clientSecret') client: Client
+    @Body() @ParamRequired() @ParamRequired('client_secret') client: Client
   ) {
     // 只能组册普通客户端
     client.type = ClientType.NORMAL;
-    client.clientSecret = sha256(client.clientSecret).toString();
+    client.client_secret = sha256(client.client_secret).toString();
     return prismaClient.client.create({
       data: client,
       select: this.select,
@@ -37,8 +37,8 @@ export class ClientController {
   async update(@Body() @ParamRequired() @ParamRequired('id') client: Client) {
     // 只能组册普通客户端
     client.type = ClientType.NORMAL;
-    if (client.clientSecret) {
-      client.clientSecret = sha256(client.clientSecret).toString();
+    if (client.client_secret) {
+      client.client_secret = sha256(client.client_secret).toString();
     }
     return prismaClient.client.update({
       where: {

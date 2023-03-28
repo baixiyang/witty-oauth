@@ -1,8 +1,8 @@
 export default {
   systemClient: {
     desc: 'system',
-    clientId: 'system',
-    clientSecret: '42ea9BE#',
+    client_id: 'system',
+    client_secret: '42ea9BE#',
   },
   systemAdminUsers: [
     {

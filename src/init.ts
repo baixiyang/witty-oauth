@@ -26,22 +26,22 @@ export async function init() {
     ),
     prismaClient.client.upsert({
       where: {
-        clientId: systemClient.clientId,
+        client_id: systemClient.client_id,
       },
       create: {
         ...systemClient,
-        clientSecret: sha256(systemClient.clientSecret).toString(),
+        client_secret: sha256(systemClient.client_secret).toString(),
         type: ClientType.SYSTEM,
       },
       update: {
         ...systemClient,
-        clientSecret: sha256(systemClient.clientSecret).toString(),
+        client_secret: sha256(systemClient.client_secret).toString(),
         type: ClientType.SYSTEM,
       },
     }),
     prismaClient.client.update({
       where: {
-        clientId: systemClient.clientId,
+        client_id: systemClient.client_id,
       },
       data: {
         users: {
