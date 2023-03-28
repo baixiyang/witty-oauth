@@ -3,6 +3,7 @@ export default {
     desc: 'system',
     client_id: 'system',
     client_secret: '42ea9BE#',
+    redirectUris: ['https://www.baidu.com']
   },
   systemAdminUsers: [
     {
@@ -23,4 +24,7 @@ export default {
     host: '127.0.0.1',
     port: 6379,
   },
+  // 单位 秒
+  authorizationCodeLifeTime: 60,
+  iss: 'witty-oauth',
 };

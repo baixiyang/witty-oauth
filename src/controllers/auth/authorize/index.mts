@@ -5,9 +5,12 @@ import {
   Query,
   ResponseError,
 } from 'witty-koa';
-import { prismaClient } from '../../index';
-import { CodeChallengeMethod, ResponseErrorType, ResponseType } from './type';
+import { prismaClient, redisClient } from '../../../index.mjs';
+import { CodeChallengeMethod, ResponseErrorType, ResponseType } from '../type.mjs';
 import { ClientScope, GrantType } from '@prisma/client';
+import { Context } from 'koa';
+import { remove } from 'lodash-es';
+import config from '../../../config.mjs';
 
 @Controller('/auth')
 export class AuthController {
@@ -21,7 +24,8 @@ export class AuthController {
     code_challenge_method = CodeChallengeMethod.s256,
     @Query('redirect_uri') redirect_uri: string,
     @Query('scope') scope: string,
-    @Query('state') state: string
+    @Query('state') state: string,
+    ctx: Context
   ) {
     const client = await prismaClient.client.findUnique({
       where: {
@@ -33,6 +37,7 @@ export class AuthController {
       throw new ResponseError({
         error: ResponseErrorType.UNREGISTERED_CLIENT,
         error_description: 'Client is not registered!',
+        iss: config.iss,
       });
     }
 
@@ -41,6 +46,7 @@ export class AuthController {
       throw new ResponseError({
         error: ResponseErrorType.UNSUPPORTED_CHALLENGE_METHOD,
         error_description: 'response_type is not supported!',
+        iss: config.iss,
       });
     }
     // 判断客户端是否支持code授权模式
@@ -51,6 +57,7 @@ export class AuthController {
       throw new ResponseError({
         error: ResponseErrorType.UNAUTHORIZED_CLIENT,
         error_description: 'Client is not allowed to use authorization_code!',
+        iss: config.iss,
       });
     }
     // 判断是否支持code_challenge_method
@@ -58,25 +65,41 @@ export class AuthController {
       throw new ResponseError({
         error: ResponseErrorType.UNSUPPORTED_RESPONSE_TYPE,
         error_description: 'code_challenge_method is not supported!',
+        iss: config.iss,
       });
     }
     // 判断redirect_uri是否合法
-    if (redirect_uri && !client.redirectUris.includes(redirect_uri)) {
+    if (redirect_uri) {
       const clientRedirectUris = client.redirectUris.map((uri) => {
-        return new URL(uri);
+        try {
+          return new URL(uri);
+        } catch (e) {
+          return null;
+        }
       });
-      const redirectRri = new URL(redirect_uri);
+      remove(clientRedirectUris, (item) => !item);
+      let redirectRri: URL;
+      try {
+        redirectRri = new URL(redirect_uri);
+      } catch (error) {
+        throw new ResponseError({
+          error: ResponseErrorType.INVALID_REDIRECT_URI,
+          error_description: 'redirect_uri is invalid!',
+          iss: config.iss,
+        });
+      }
       if (
         !clientRedirectUris.some((clientRedirectUri) => {
           return (
-            clientRedirectUri.origin === redirectRri.origin &&
-            clientRedirectUri.pathname === redirectRri.pathname
+            clientRedirectUri!.origin === redirectRri.origin &&
+            clientRedirectUri!.pathname === redirectRri.pathname
           );
         })
       ) {
         throw new ResponseError({
           error: ResponseErrorType.INVALID_REDIRECT_URI,
           error_description: 'redirect_uri is not registered!',
+          iss: config.iss,
         });
       }
     }
@@ -90,7 +113,33 @@ export class AuthController {
       throw new ResponseError({
         error: ResponseErrorType.INVALID_SCOPE,
         error_description: 'scope is not registered!',
+        iss: config.iss,
       });
     }
+    // 生成授权码code的逻辑
+    redirect_uri = redirect_uri || client.redirectUris[0]
+    const code = Math.random().toString(36).slice(2);
+    const ttl = config.authorizationCodeLifeTime;
+    const key = `code:${code}`;
+    await redisClient.setex(
+      key,
+      ttl,
+      JSON.stringify({
+        client_id,
+        redirect_uri,
+        scope,
+        state,
+        code_challenge,
+        code_challenge_method,
+      })
+    );
+    // 重定向到客户端
+    const redirectUri = new URL(redirect_uri );
+    redirectUri.searchParams.set('code', code);
+    if(state) {
+      redirectUri.searchParams.set('state', state);
+    }
+    redirectUri.searchParams.set('iss', config.iss);
+    ctx.redirect(redirectUri.href);
   }
 }

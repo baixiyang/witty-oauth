@@ -6,15 +6,15 @@ import {
 } from 'witty-koa';
 import { PrismaClient } from '@prisma/client';
 import * as controllers from './controllers';
-import { init } from './init';
+import { init } from './init.mjs';
 import Redis from 'ioredis';
-import config from './config';
+import config from './config.mjs';
 
 export const prismaClient = new PrismaClient();
 export const redisClient = new Redis({
   host: config.redis.host,
   port: config.redis.port,
-  db: 5555,
+  db: 1,
 });
 await init();
 
@@ -32,4 +32,7 @@ startServer({
     responseMiddleWare(),
     bodyMiddleWare(),
   ],
+  options: {
+    iss: config.iss,
+  },
 });

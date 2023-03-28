@@ -9,7 +9,7 @@ import {
   Query,
   Delete,
 } from 'witty-koa';
-import { prismaClient } from '../../index';
+import { prismaClient } from '../../index.mjs';
 import { UserRole, User } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
 

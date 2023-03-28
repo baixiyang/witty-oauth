@@ -9,7 +9,7 @@ import {
   ParamRequired,
   Delete,
 } from 'witty-koa';
-import { prismaClient } from '../../index';
+import { prismaClient } from '../../index.mjs';
 import { Client, ClientType } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
 
@@ -23,7 +23,7 @@ export class ClientController {
   };
   @Post()
   async create(
-    @Body() @ParamRequired() @ParamRequired('client_secret') client: Client
+    @Body() @ParamRequired() @ParamRequired('client_secret') @ParamRequired('redirectUris') client: Client
   ) {
     // 只能组册普通客户端
     client.type = ClientType.NORMAL;
