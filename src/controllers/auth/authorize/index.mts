@@ -4,13 +4,20 @@ import {
   ParamRequired,
   Query,
   ResponseError,
+  Session,
+  UserInfo,
 } from 'witty-koa';
 import { prismaClient, redisClient } from '../../../index.mjs';
-import { CodeChallengeMethod, ResponseErrorType, ResponseType } from '../type.mjs';
-import { ClientScope, GrantType } from '@prisma/client';
+import {
+  CodeChallengeMethod,
+  ResponseErrorType,
+  ResponseType,
+} from '../type.mjs';
+import { ClientScope, GrantType, User } from '@prisma/client';
 import { Context } from 'koa';
 import { remove } from 'lodash-es';
 import config from '../../../config.mjs';
+import { getResponseError } from '../util.mjs';
 
 @Controller('/auth')
 export class AuthController {
@@ -21,10 +28,11 @@ export class AuthController {
     @Query('client_id') @ParamRequired() client_id: string,
     @Query('code_challenge') @ParamRequired() code_challenge: string,
     @Query('code_challenge_method')
-    code_challenge_method = CodeChallengeMethod.s256,
-    @Query('redirect_uri') redirect_uri: string,
-    @Query('scope') scope: string,
-    @Query('state') state: string,
+    code_challenge_method = CodeChallengeMethod.plain,
+    @Query('redirect_uri') redirect_uri: string | undefined,
+    @Query('scope') scope: string | undefined,
+    @Query('state') state: string | undefined,
+    @Session('authUserInfo') authUserInfo: User | undefined,
     ctx: Context
   ) {
     const client = await prismaClient.client.findUnique({
@@ -34,39 +42,35 @@ export class AuthController {
     });
     // 判断是否存在客户端
     if (!client) {
-      throw new ResponseError({
-        error: ResponseErrorType.UNREGISTERED_CLIENT,
-        error_description: 'Client is not registered!',
-        iss: config.iss,
-      });
+      throw getResponseError(
+        ResponseErrorType.INVALID_CLIENT,
+        'unknown client'
+      );
     }
 
     // 判断是否为code 授权模式
     if (response_type !== ResponseType.code) {
-      throw new ResponseError({
-        error: ResponseErrorType.UNSUPPORTED_CHALLENGE_METHOD,
-        error_description: 'response_type is not supported!',
-        iss: config.iss,
-      });
+      throw getResponseError(
+        ResponseErrorType.UNSUPPORTED_RESPONSE_TYPE,
+        'response_type is not supported!'
+      );
     }
     // 判断客户端是否支持code授权模式
     if (
       response_type === ResponseType.code &&
       !client.grantTypes.includes(GrantType.authorization_code)
     ) {
-      throw new ResponseError({
-        error: ResponseErrorType.UNAUTHORIZED_CLIENT,
-        error_description: 'Client is not allowed to use authorization_code!',
-        iss: config.iss,
-      });
+      throw getResponseError(
+        ResponseErrorType.UNAUTHORIZED_CLIENT,
+        'The client is not authorized to request an authorization code using this method!'
+      );
     }
     // 判断是否支持code_challenge_method
     if (!CodeChallengeMethod[code_challenge_method as CodeChallengeMethod]) {
-      throw new ResponseError({
-        error: ResponseErrorType.UNSUPPORTED_RESPONSE_TYPE,
-        error_description: 'code_challenge_method is not supported!',
-        iss: config.iss,
-      });
+      throw getResponseError(
+        ResponseErrorType.INVALID_REQUEST,
+        'invalid code_challenge_method'
+      );
     }
     // 判断redirect_uri是否合法
     if (redirect_uri) {
@@ -82,11 +86,10 @@ export class AuthController {
       try {
         redirectRri = new URL(redirect_uri);
       } catch (error) {
-        throw new ResponseError({
-          error: ResponseErrorType.INVALID_REDIRECT_URI,
-          error_description: 'redirect_uri is invalid!',
-          iss: config.iss,
-        });
+        throw getResponseError(
+          ResponseErrorType.INVALID_REDIRECT_URI,
+          'redirect_uri is invalid!'
+        );
       }
       if (
         !clientRedirectUris.some((clientRedirectUri) => {
@@ -96,11 +99,10 @@ export class AuthController {
           );
         })
       ) {
-        throw new ResponseError({
-          error: ResponseErrorType.INVALID_REDIRECT_URI,
-          error_description: 'redirect_uri is not registered!',
-          iss: config.iss,
-        });
+        throw getResponseError(
+          ResponseErrorType.INVALID_REDIRECT_URI,
+          'redirect_uri does not match the client!'
+        );
       }
     }
     // 判断scope是否合法
@@ -110,21 +112,30 @@ export class AuthController {
         .split(' ')
         .some((item) => !client.scopes.includes(item as ClientScope))
     ) {
-      throw new ResponseError({
-        error: ResponseErrorType.INVALID_SCOPE,
-        error_description: 'scope is not registered!',
-        iss: config.iss,
-      });
+      throw getResponseError(
+        ResponseErrorType.INVALID_SCOPE,
+        'scope beyond range!'
+      );
+    }
+    // 判断用户是否登录
+    if (!authUserInfo) {
+      ctx.redirect(
+        `/login?redirect_uri=${encodeURIComponent(
+          ctx.request.url
+        )}&client_id=${client_id}&scope=${scope}`
+      );
+      return;
     }
     // 生成授权码code的逻辑
-    redirect_uri = redirect_uri || client.redirectUris[0]
+    redirect_uri = redirect_uri || client.redirectUris[0];
     const code = Math.random().toString(36).slice(2);
     const ttl = config.authorizationCodeLifeTime;
-    const key = `code:${code}`;
+    const key = `auth:code:${code}`;
     await redisClient.setex(
       key,
       ttl,
       JSON.stringify({
+        userInfo: authUserInfo,
         client_id,
         redirect_uri,
         scope,
@@ -134,9 +145,9 @@ export class AuthController {
       })
     );
     // 重定向到客户端
-    const redirectUri = new URL(redirect_uri );
+    const redirectUri = new URL(redirect_uri);
     redirectUri.searchParams.set('code', code);
-    if(state) {
+    if (state) {
       redirectUri.searchParams.set('state', state);
     }
     redirectUri.searchParams.set('iss', config.iss);

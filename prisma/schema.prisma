@@ -33,7 +33,7 @@ model Client {
   client_secret String  @db.VarChar(256)
   type         ClientType @default(NORMAL)
   redirectUris String[] @db.VarChar(512) @default([])
-  grantTypes   GrantType[] @default([authorization_code, refresh_token, client_credentials])
+  grantTypes   GrantType[] @default([authorization_code, refresh_token])
   scopes       ClientScope[] @default([read, white])
   createdAt    DateTime @default(now()) @db.Timestamp()
   updatedAt    DateTime @updatedAt @db.Timestamp()

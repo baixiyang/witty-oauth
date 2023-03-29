@@ -5,15 +5,18 @@ export enum ResponseType {
 
 export enum CodeChallengeMethod {
   s256 = 's256',
+  plain = 'plain',
 }
 
 export enum ResponseErrorType {
   // 请求参数不合法或者必填参数未传
   INVALID_REQUEST = 'invalid_request',
-  // 客户端未注册
-  UNREGISTERED_CLIENT = 'unregistered_client',
+  // unknown client, no client authentication included, or unsupported authentication method
+  INVALID_CLIENT = 'invalid_client',
+  INVALID_GRANT = 'invalid_grant',
   // 客户端不支持授权
   UNAUTHORIZED_CLIENT = 'unauthorized_client',
+  UNSUPPORTED_GRANT_TYPE = 'unsupported_grant_type',
   // 重定向地址未注册
   INVALID_REDIRECT_URI = 'invalid_redirect_uri',
   // 用户或授权服务器拒绝授权

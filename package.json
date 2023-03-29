@@ -15,8 +15,10 @@
   "license": "ISC",
   "dependencies": {
     "@prisma/client": "^4.11.0",
+    "@types/uuid": "^9.0.1",
     "crypto-js": "^4.1.1",
-    "witty-koa": "^0.0.48"
+    "uuid": "^9.0.0",
+    "witty-koa": "^0.0.53"
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",

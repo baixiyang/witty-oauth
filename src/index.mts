@@ -14,7 +14,7 @@ export const prismaClient = new PrismaClient();
 export const redisClient = new Redis({
   host: config.redis.host,
   port: config.redis.port,
-  db: 1,
+  db: config.redis.db,
 });
 await init();
 
@@ -26,7 +26,11 @@ startServer({
       redisOptions: {
         host: config.redis.host,
         port: config.redis.port,
-        db: 0,
+        db: config.redis.db,
+      },
+      sessionOptions: {
+        prefix: 'auth:sid:',
+        ttl: config.sessionLeftTime ? config.sessionLeftTime * 1000 : undefined,
       },
     }),
     responseMiddleWare(),
