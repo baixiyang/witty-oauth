@@ -1,11 +1,11 @@
 import { Controller, Get, Required, Query } from 'wittyna';
 import { prismaClient, redisClient } from '../../index.mjs';
-import { CodeChallengeMethod, ResponseErrorType } from '../type.mjs';
+import { CodeChallengeMethod, ResponseErrorType } from '../../type.mjs';
 import { ClientScope, GrantType, User } from '@prisma/client';
 import { Context } from 'koa';
-import config from '../../config.mjs';
+import config from '../../../config.mjs';
 import sha256 from 'crypto-js/sha256';
-import { getResponseError } from '../util.mjs';
+import { getResponseError } from '../../util.mjs';
 import { v4 as uuid } from 'uuid';
 
 @Controller('token')

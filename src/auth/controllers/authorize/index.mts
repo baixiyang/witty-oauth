@@ -4,12 +4,12 @@ import {
   CodeChallengeMethod,
   ResponseErrorType,
   ResponseType,
-} from '../type.mjs';
+} from '../../type.mjs';
 import { ClientScope, GrantType, User } from '@prisma/client';
 import { Context } from 'koa';
 import { remove } from 'lodash-es';
-import config from '../../config.mjs';
-import { getResponseError } from '../util.mjs';
+import config from '../../../config.mjs';
+import { getResponseError } from '../../util.mjs';
 
 @Controller('authorize')
 export class AuthController {
@@ -142,7 +142,7 @@ export class AuthController {
     if (state) {
       redirectUri.searchParams.set('state', state);
     }
-    redirectUri.searchParams.set('iss', config.iss);
+    redirectUri.searchParams.set('iss', config.authIss);
     ctx.redirect(redirectUri.href);
   }
 }

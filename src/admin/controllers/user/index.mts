@@ -9,11 +9,11 @@ import {
   Query,
   Delete,
 } from 'wittyna';
-import { prismaClient } from '../../../auth/index.mjs';
+import { prismaClient } from '../../index.mjs';
 import { UserRole, User } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
 
-@Controller('/admin/user')
+@Controller('user')
 export class UserController {
   select = { id: true, username: true, email: true, role: true };
   @Post()
@@ -40,7 +40,7 @@ export class UserController {
       data: user,
     });
   }
-  @Get('/:id')
+  @Get(':id')
   async getUser(@Param('id') @Required() id: string) {
     return prismaClient.user.findUnique({
       where: {
@@ -57,7 +57,7 @@ export class UserController {
       select: this.select,
     });
   }
-  @Delete('/:id')
+  @Delete(':id')
   async delete(@Param('id') @Required() id: string) {
     return prismaClient.user.delete({
       where: {
@@ -66,7 +66,7 @@ export class UserController {
       select: this.select,
     });
   }
-  @Post('/:id/clients')
+  @Post(':id/clients')
   async addClients(
     @Param('id') @Required() id: string,
     @Body('ids') @Required() ids: string[]

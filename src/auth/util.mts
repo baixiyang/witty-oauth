@@ -9,7 +9,7 @@ export function getResponseError(
   return new ResponseError({
     error,
     error_description,
-    iss: config.iss,
+    iss: config.authIss,
     status,
   });
 }

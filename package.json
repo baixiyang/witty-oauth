@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "dev": "prisma db push && nodemon --watch 'src/**/*.ts' --exec 'node --loader ts-node/esm --experimental-specifier-resolution=node src/auth/index.mts'",
+    "dev": "prisma db push && nodemon --watch 'src/**/*.ts' --exec 'node --loader ts-node/esm --experimental-specifier-resolution=node src/index.mts'",
     "release": "tsc && npm publish"
   },
   "keywords": [],

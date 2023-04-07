@@ -1,11 +1,12 @@
-const crypto = require('crypto');
-const fs = require('fs');
+const crypto = require('node:crypto');
+const fs = require('node:fs');
 const jwt = require('jsonwebtoken');
 
 // Generate RSA key pair
 let { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
     modulusLength: 2048,
 });
+
 fs.writeFileSync('private.pem', privateKey.export({
     type: 'pkcs1',
     format: 'pem',

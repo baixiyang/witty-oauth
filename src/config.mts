@@ -1,3 +1,5 @@
+import fs from "node:fs";
+
 export default {
   systemClient: {
     desc: 'system',
@@ -30,5 +32,8 @@ export default {
   accessTokenLifeTime: 60 * 60,
   refreshTokenLifeTime: 60 * 60 * 24 * 30,
   sessionLeftTime: 60 * 60 * 24,
-  iss: 'wittyna-auth',
+  authIss: 'https://auth.wittyna.com',
+  adminIss: 'https://admin.wittyna.com',
+  jwtPrivateKey: fs.readFileSync('./pem/private.pem'),
+  jwtPublicKey: fs.readFileSync('./pem/public.pem'),
 };

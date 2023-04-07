@@ -1,7 +1,7 @@
 import { prismaClient } from './index.mjs';
 import { ClientType, UserRole } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
-import config from './config.mjs';
+import config from '../config.mjs';
 
 export async function init() {
   const systemClient = config.systemClient;
