@@ -3,7 +3,7 @@ import {
   responseMiddleWare,
   sessionMiddleWare,
   startServer,
-} from 'witty-koa';
+} from 'wittyna';
 import { PrismaClient } from '@prisma/client';
 import * as controllers from './controllers';
 import { init } from './init.mjs';
@@ -21,6 +21,7 @@ await init();
 startServer({
   port: 5555,
   controllers: Object.values(controllers),
+  routerPrefix: '/auth',
   middlewares: [
     sessionMiddleWare({
       redisOptions: {

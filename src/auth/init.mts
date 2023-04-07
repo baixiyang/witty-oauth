@@ -30,12 +30,12 @@ export async function init() {
       },
       create: {
         ...systemClient,
-        client_secret: sha256(systemClient.client_secret).toString(),
+        client_secret: systemClient.client_secret,
         type: ClientType.SYSTEM,
       },
       update: {
         ...systemClient,
-        client_secret: sha256(systemClient.client_secret).toString(),
+        client_secret: systemClient.client_secret,
         type: ClientType.SYSTEM,
       },
     }),

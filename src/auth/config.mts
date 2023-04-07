@@ -30,5 +30,5 @@ export default {
   accessTokenLifeTime: 60 * 60,
   refreshTokenLifeTime: 60 * 60 * 24 * 30,
   sessionLeftTime: 60 * 60 * 24,
-  iss: 'witty-oauth',
+  iss: 'wittyna-auth',
 };

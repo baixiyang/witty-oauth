@@ -6,10 +6,10 @@ import {
   Param,
   Put,
   Query,
-  ParamRequired,
+  Required,
   Delete,
-} from 'witty-koa';
-import { prismaClient } from '../../index.mjs';
+} from 'wittyna';
+import { prismaClient } from '../../../auth/index.mjs';
 import { Client, ClientType } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
 
@@ -23,23 +23,23 @@ export class ClientController {
   };
   @Post()
   async create(
-    @Body() @ParamRequired() @ParamRequired('client_secret') @ParamRequired('redirectUris') client: Client
+    @Body()
+    @Required()
+    @Required('client_secret')
+    @Required('redirectUris')
+    client: Client
   ) {
     // 只能组册普通客户端
     client.type = ClientType.NORMAL;
-    client.client_secret = sha256(client.client_secret).toString();
     return prismaClient.client.create({
       data: client,
       select: this.select,
     });
   }
   @Put()
-  async update(@Body() @ParamRequired() @ParamRequired('id') client: Client) {
+  async update(@Body() @Required() @Required('id') client: Client) {
     // 只能组册普通客户端
     client.type = ClientType.NORMAL;
-    if (client.client_secret) {
-      client.client_secret = sha256(client.client_secret).toString();
-    }
     return prismaClient.client.update({
       where: {
         id: client.id,
@@ -49,7 +49,7 @@ export class ClientController {
     });
   }
   @Get('/:id')
-  async getOne(@Param('id') @ParamRequired() id: string) {
+  async getOne(@Param('id') @Required() id: string) {
     return prismaClient.client.findUnique({
       where: {
         id: id,
@@ -66,7 +66,7 @@ export class ClientController {
     });
   }
   @Delete('/:id')
-  async delete(@Param('id') @ParamRequired() id: string) {
+  async delete(@Param('id') @Required() id: string) {
     return prismaClient.client.delete({
       where: {
         id: id,
@@ -76,8 +76,8 @@ export class ClientController {
   }
   @Post('/:id/users')
   async addUsers(
-    @Param('id') @ParamRequired() id: string,
-    @Body('ids') @ParamRequired() ids: string[]
+    @Param('id') @Required() id: string,
+    @Body('ids') @Required() ids: string[]
   ) {
     return prismaClient.client.update({
       where: {

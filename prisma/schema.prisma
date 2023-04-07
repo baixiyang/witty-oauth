@@ -16,6 +16,7 @@ model User {
   password  String   @db.VarChar(256)
   role      UserRole @default(USER)
   email     String?  @unique
+  phone     String?  @unique
   createdAt DateTime @default(now()) @db.Timestamp()
   updatedAt DateTime @updatedAt @db.Timestamp()
   clients   Client[]
@@ -34,7 +35,8 @@ model Client {
   type         ClientType @default(NORMAL)
   redirectUris String[] @db.VarChar(512) @default([])
   grantTypes   GrantType[] @default([authorization_code, refresh_token])
-  scopes       ClientScope[] @default([read, white])
+  // 授权范围
+  scopes       ClientScope[] @default([id, username, email, phone])
   createdAt    DateTime @default(now()) @db.Timestamp()
   updatedAt    DateTime @updatedAt @db.Timestamp()
   users        User[]
@@ -46,8 +48,10 @@ enum ClientType {
 }
 
 enum ClientScope {
-  read
-  white
+  id
+  username
+  email
+  phone
 }
 
 // 授权类型

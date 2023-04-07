@@ -5,11 +5,11 @@ import {
   Get,
   Param,
   Put,
-  ParamRequired,
+  Required,
   Query,
   Delete,
-} from 'witty-koa';
-import { prismaClient } from '../../index.mjs';
+} from 'wittyna';
+import { prismaClient } from '../../../auth/index.mjs';
 import { UserRole, User } from '@prisma/client';
 import sha256 from 'crypto-js/sha256';
 
@@ -17,9 +17,7 @@ import sha256 from 'crypto-js/sha256';
 export class UserController {
   select = { id: true, username: true, email: true, role: true };
   @Post()
-  async createUser(
-    @Body() @ParamRequired() @ParamRequired('password') user: User
-  ) {
+  async createUser(@Body() @Required() @Required('password') user: User) {
     // 只能组册普通用户
     user.role = UserRole.USER;
     return prismaClient.user.create({
@@ -28,7 +26,7 @@ export class UserController {
     });
   }
   @Put()
-  async updateUser(@Body() @ParamRequired() @ParamRequired('id') user: User) {
+  async updateUser(@Body() @Required() @Required('id') user: User) {
     // 只能组册普通用户
     user.role = UserRole.USER;
     if (user.password) {
@@ -43,7 +41,7 @@ export class UserController {
     });
   }
   @Get('/:id')
-  async getUser(@Param('id') @ParamRequired() id: string) {
+  async getUser(@Param('id') @Required() id: string) {
     return prismaClient.user.findUnique({
       where: {
         id: id,
@@ -60,7 +58,7 @@ export class UserController {
     });
   }
   @Delete('/:id')
-  async delete(@Param('id') @ParamRequired() id: string) {
+  async delete(@Param('id') @Required() id: string) {
     return prismaClient.user.delete({
       where: {
         id: id,
@@ -70,8 +68,8 @@ export class UserController {
   }
   @Post('/:id/clients')
   async addClients(
-    @Param('id') @ParamRequired() id: string,
-    @Body('ids') @ParamRequired() ids: string[]
+    @Param('id') @Required() id: string,
+    @Body('ids') @Required() ids: string[]
   ) {
     return prismaClient.user.update({
       where: {

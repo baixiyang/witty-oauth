@@ -1,13 +1,5 @@
-import {
-  Controller,
-  Get,
-  ParamRequired,
-  Query,
-  ResponseError,
-  Session,
-  UserInfo,
-} from 'witty-koa';
-import { prismaClient, redisClient } from '../../../index.mjs';
+import { Controller, Get, Required, Query, Session } from 'wittyna';
+import { prismaClient, redisClient } from '../../index.mjs';
 import {
   CodeChallengeMethod,
   ResponseErrorType,
@@ -16,17 +8,17 @@ import {
 import { ClientScope, GrantType, User } from '@prisma/client';
 import { Context } from 'koa';
 import { remove } from 'lodash-es';
-import config from '../../../config.mjs';
+import config from '../../config.mjs';
 import { getResponseError } from '../util.mjs';
 
-@Controller('/auth')
+@Controller('authorize')
 export class AuthController {
   // 该接口在oauth2.1中规定只用于授权码模式
-  @Get('/authorize')
+  @Get()
   async authorize(
-    @Query('response_type') @ParamRequired() response_type: string,
-    @Query('client_id') @ParamRequired() client_id: string,
-    @Query('code_challenge') @ParamRequired() code_challenge: string,
+    @Query('response_type') @Required() response_type: string,
+    @Query('client_id') @Required() client_id: string,
+    @Query('code_challenge') @Required() code_challenge: string,
     @Query('code_challenge_method')
     code_challenge_method = CodeChallengeMethod.plain,
     @Query('redirect_uri') redirect_uri: string | undefined,

@@ -1,21 +1,21 @@
-import { Controller, Get, ParamRequired, Query } from 'witty-koa';
-import { prismaClient, redisClient } from '../../../index.mjs';
+import { Controller, Get, Required, Query } from 'wittyna';
+import { prismaClient, redisClient } from '../../index.mjs';
 import { CodeChallengeMethod, ResponseErrorType } from '../type.mjs';
 import { ClientScope, GrantType, User } from '@prisma/client';
 import { Context } from 'koa';
-import config from '../../../config.mjs';
+import config from '../../config.mjs';
 import sha256 from 'crypto-js/sha256';
 import { getResponseError } from '../util.mjs';
 import { v4 as uuid } from 'uuid';
 
-@Controller('/auth')
-export class AuthController {
+@Controller('token')
+export class TokenController {
   // 该接口在oauth2.1中规定只用于授权码模式
-  @Get('/token')
+  @Get()
   async authorize(
-    @Query('client_id') @ParamRequired() client_id: string,
-    @Query('client_secret') @ParamRequired() client_secret: string,
-    @Query('grant_type') @ParamRequired() grant_type: string,
+    @Query('client_id') @Required() client_id: string,
+    @Query('client_secret') @Required() client_secret: string,
+    @Query('grant_type') @Required() grant_type: string,
     @Query('code') code: string | undefined,
     @Query('redirect_uri') redirect_uri: string | undefined,
     @Query('code_verifier') code_verifier: string | undefined,
