@@ -1,2 +1,2 @@
-import './admin/index.mjs'
-import './auth/index.mjs'
+import './servers/admin/index.mjs';
+import './servers/auth/index.mjs';

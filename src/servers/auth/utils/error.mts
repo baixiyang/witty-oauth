@@ -1,5 +1,5 @@
-import { ResponseErrorType } from './type.mjs';
-import config from '../config.mjs';
+import { ResponseErrorType } from '../type.mjs';
+import { CONFIG } from '../../../config.mjs';
 import { ResponseError } from 'wittyna';
 export function getResponseError(
   error: ResponseErrorType,
@@ -9,7 +9,7 @@ export function getResponseError(
   return new ResponseError({
     error,
     error_description,
-    iss: config.authIss,
+    iss: CONFIG.authIss,
     status,
   });
 }

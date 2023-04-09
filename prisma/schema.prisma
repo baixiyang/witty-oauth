@@ -11,15 +11,15 @@ datasource db {
 }
 
 model User {
-  id        String   @id @unique @default(uuid()) @db.VarChar(64)
-  username  String   @unique @db.VarChar(256)
-  password  String   @db.VarChar(256)
-  role      UserRole @default(USER)
-  email     String?  @unique
-  phone     String?  @unique
-  createdAt DateTime @default(now()) @db.Timestamp()
-  updatedAt DateTime @updatedAt @db.Timestamp()
-  clients   Client[]
+  id         String     @id @unique @default(uuid()) @db.VarChar(64)
+  username   String     @unique @db.VarChar(256)
+  password   String     @db.VarChar(256)
+  roles      UserRole[] @default([USER])
+  email      String?    @unique
+  phone      String?    @unique
+  created_at DateTime   @default(now()) @db.Timestamp()
+  updated_at DateTime   @updatedAt @db.Timestamp()
+  clients    Client[]
 }
 
 enum UserRole {
@@ -28,18 +28,18 @@ enum UserRole {
 }
 
 model Client {
-  id           String   @id @unique @default(uuid()) @db.VarChar(64)
-  desc         String?  @db.VarChar(256)
-  client_id     String   @unique @db.VarChar(256)
-  client_secret String  @db.VarChar(256)
-  type         ClientType @default(NORMAL)
-  redirectUris String[] @db.VarChar(512) @default([])
-  grantTypes   GrantType[] @default([authorization_code, refresh_token])
-  // 授权范围
-  scopes       ClientScope[] @default([id, username, email, phone])
-  createdAt    DateTime @default(now()) @db.Timestamp()
-  updatedAt    DateTime @updatedAt @db.Timestamp()
-  users        User[]
+  id            String      @id @unique @default(uuid()) @db.VarChar(64)
+  desc          String?     @db.VarChar(256)
+  client_id     String      @unique @db.VarChar(256)
+  client_secret String      @db.VarChar(256)
+  type          ClientType  @default(NORMAL)
+  redirect_uris String[]    @default([]) @db.VarChar(512)
+  grant_types   GrantType[] @default([authorization_code, refresh_token])
+  // 客户端需要的授权范围
+  scopes        Scope[]     @default([id, username, email, phone, roles])
+  created_at    DateTime    @default(now()) @db.Timestamp()
+  updated_at    DateTime    @updatedAt @db.Timestamp()
+  users         User[]
 }
 
 enum ClientType {
@@ -47,11 +47,12 @@ enum ClientType {
   NORMAL
 }
 
-enum ClientScope {
+enum Scope {
   id
   username
   email
   phone
+  roles
 }
 
 // 授权类型

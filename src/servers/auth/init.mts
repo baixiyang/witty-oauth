@@ -1,11 +1,11 @@
 import { prismaClient } from './index.mjs';
 import { ClientType, UserRole } from '@prisma/client';
-import sha256 from 'crypto-js/sha256';
-import config from '../config.mjs';
+import { CONFIG } from '../../config.mjs';
+import { sha256 } from '../../utils/encrypt.mjs';
 
 export async function init() {
-  const systemClient = config.systemClient;
-  const systemAdminUsers = config.systemAdminUsers;
+  const systemClient = CONFIG.systemClient;
+  const systemAdminUsers = CONFIG.systemAdminUsers;
   await prismaClient.$transaction([
     ...systemAdminUsers.map((user) =>
       prismaClient.user.upsert({
@@ -14,13 +14,13 @@ export async function init() {
         },
         create: {
           ...user,
-          role: UserRole.SYSTEM_ADMIN,
-          password: sha256(user.password).toString(),
+          roles: [UserRole.SYSTEM_ADMIN],
+          password: sha256(user.password),
         },
         update: {
           ...user,
-          role: UserRole.SYSTEM_ADMIN,
-          password: sha256(user.password).toString(),
+          roles: [UserRole.SYSTEM_ADMIN],
+          password: sha256(user.password),
         },
       })
     ),

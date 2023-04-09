@@ -11,7 +11,6 @@ import {
 } from 'wittyna';
 import { prismaClient } from '../../index.mjs';
 import { Client, ClientType } from '@prisma/client';
-import sha256 from 'crypto-js/sha256';
 
 @Controller('client')
 export class ClientController {
@@ -26,7 +25,7 @@ export class ClientController {
     @Body()
     @Required()
     @Required('client_secret')
-    @Required('redirectUris')
+    @Required('redirect_uris')
     client: Client
   ) {
     // 只能组册普通客户端
@@ -58,9 +57,12 @@ export class ClientController {
     });
   }
   @Get()
-  async getList(@Query('pageNo') pageNo = 1, @Query('pageSize') pageSize = 10) {
+  async getList(
+    @Query('currenPage') currentPage = 1,
+    @Query('pageSize') pageSize = 10
+  ) {
     return prismaClient.client.findMany({
-      skip: (pageNo - 1) * pageSize,
+      skip: (currentPage - 1) * pageSize,
       take: pageSize,
       select: this.select,
     });

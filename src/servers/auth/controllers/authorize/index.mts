@@ -5,11 +5,11 @@ import {
   ResponseErrorType,
   ResponseType,
 } from '../../type.mjs';
-import { ClientScope, GrantType, User } from '@prisma/client';
+import { Scope, GrantType } from '@prisma/client';
 import { Context } from 'koa';
 import { remove } from 'lodash-es';
-import config from '../../../config.mjs';
-import { getResponseError } from '../../util.mjs';
+import { CONFIG } from '../../../../config.mjs';
+import { getResponseError } from '../../utils/error.mjs';
 
 @Controller('authorize')
 export class AuthController {
@@ -24,7 +24,7 @@ export class AuthController {
     @Query('redirect_uri') redirect_uri: string | undefined,
     @Query('scope') scope: string | undefined,
     @Query('state') state: string | undefined,
-    @Session('authUserInfo') authUserInfo: User | undefined,
+    @Session('user_id') user_id: string | undefined,
     ctx: Context
   ) {
     const client = await prismaClient.client.findUnique({
@@ -50,7 +50,7 @@ export class AuthController {
     // 判断客户端是否支持code授权模式
     if (
       response_type === ResponseType.code &&
-      !client.grantTypes.includes(GrantType.authorization_code)
+      !client.grant_types.includes(GrantType.authorization_code)
     ) {
       throw getResponseError(
         ResponseErrorType.UNAUTHORIZED_CLIENT,
@@ -66,7 +66,7 @@ export class AuthController {
     }
     // 判断redirect_uri是否合法
     if (redirect_uri) {
-      const clientRedirectUris = client.redirectUris.map((uri) => {
+      const clientRedirectUris = client.redirect_uris.map((uri) => {
         try {
           return new URL(uri);
         } catch (e) {
@@ -100,9 +100,7 @@ export class AuthController {
     // 判断scope是否合法
     if (
       scope &&
-      scope
-        .split(' ')
-        .some((item) => !client.scopes.includes(item as ClientScope))
+      scope.split(' ').some((item) => !client.scopes.includes(item as Scope))
     ) {
       throw getResponseError(
         ResponseErrorType.INVALID_SCOPE,
@@ -110,7 +108,7 @@ export class AuthController {
       );
     }
     // 判断用户是否登录
-    if (!authUserInfo) {
+    if (!user_id) {
       ctx.redirect(
         `/login?redirect_uri=${encodeURIComponent(
           ctx.request.url
@@ -119,15 +117,15 @@ export class AuthController {
       return;
     }
     // 生成授权码code的逻辑
-    redirect_uri = redirect_uri || client.redirectUris[0];
+    redirect_uri = redirect_uri || client.redirect_uris[0];
     const code = Math.random().toString(36).slice(2);
-    const ttl = config.authorizationCodeLifeTime;
+    const ttl = CONFIG.authorizationCodeLifeTime;
     const key = `auth:code:${code}`;
     await redisClient.setex(
       key,
       ttl,
       JSON.stringify({
-        userInfo: authUserInfo,
+        user_id: user_id,
         client_id,
         redirect_uri,
         scope,
@@ -142,7 +140,7 @@ export class AuthController {
     if (state) {
       redirectUri.searchParams.set('state', state);
     }
-    redirectUri.searchParams.set('iss', config.authIss);
+    redirectUri.searchParams.set('iss', CONFIG.authIss);
     ctx.redirect(redirectUri.href);
   }
 }

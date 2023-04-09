@@ -31,4 +31,5 @@ export enum ResponseErrorType {
   SERVER_ERROR = 'server_error',
   // 503
   TEMPORARILY_UNAVAILABLE = 'temporarily_unavailable',
+  INVALID_TOKEN = 'invalid_token',
 }

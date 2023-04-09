@@ -1,18 +1,23 @@
 import { Controller, Get, Required, Query } from 'wittyna';
 import { prismaClient, redisClient } from '../../index.mjs';
 import { CodeChallengeMethod, ResponseErrorType } from '../../type.mjs';
-import { ClientScope, GrantType, User } from '@prisma/client';
+import { Scope, GrantType } from '@prisma/client';
 import { Context } from 'koa';
-import config from '../../../config.mjs';
-import sha256 from 'crypto-js/sha256';
-import { getResponseError } from '../../util.mjs';
-import { v4 as uuid } from 'uuid';
+import { CONFIG } from '../../../../config.mjs';
+import { getResponseError } from '../../utils/error.mjs';
+import { genNormalJwt } from '../../utils/jwt.mjs';
+import { sha256 } from '../../../../utils/encrypt.mjs';
+import {
+  getRefreshTokenInfo,
+  setAccessToken,
+  setRefreshToken,
+} from '../../utils/token.mjs';
 
 @Controller('token')
 export class TokenController {
   // 该接口在oauth2.1中规定只用于授权码模式
   @Get()
-  async authorize(
+  async getToken(
     @Query('client_id') @Required() client_id: string,
     @Query('client_secret') @Required() client_secret: string,
     @Query('grant_type') @Required() grant_type: string,
@@ -37,7 +42,7 @@ export class TokenController {
       );
     }
     // 判断client_secret是否正确
-    if (client.client_secret !== sha256(client_secret).toString()) {
+    if (client.client_secret !== client_secret) {
       throw getResponseError(
         ResponseErrorType.INVALID_CLIENT,
         'Client secret is not correct!',
@@ -47,9 +52,7 @@ export class TokenController {
     // 判断scope是否合法
     if (
       scope &&
-      scope
-        .split(' ')
-        .some((item) => !client.scopes.includes(item as ClientScope))
+      scope.split(' ').some((item) => !client.scopes.includes(item as Scope))
     ) {
       throw getResponseError(
         ResponseErrorType.INVALID_SCOPE,
@@ -57,7 +60,7 @@ export class TokenController {
       );
     }
     // 判断grant_type是否合法
-    if (!client.grantTypes.includes(grant_type as GrantType)) {
+    if (!client.grant_types.includes(grant_type as GrantType)) {
       throw getResponseError(
         ResponseErrorType.UNSUPPORTED_GRANT_TYPE,
         'grant_type is not supported!'
@@ -85,7 +88,7 @@ export class TokenController {
           );
         }
         const {
-          userInfo,
+          user_id,
           client_id,
           scope: scope_,
           redirect_uri: redirect_uri_,
@@ -108,7 +111,7 @@ export class TokenController {
         // 不必管code_challenge_method是否合法，因为在生成code时已经判断过了，这里只需要判断code_challenge是否正确
         if (
           (code_challenge_method === CodeChallengeMethod.s256 &&
-            code_challenge !== sha256(code_verifier).toString()) ||
+            code_challenge !== sha256(code_verifier)) ||
           (code_challenge_method === CodeChallengeMethod.plain &&
             code_challenge !== code_verifier)
         ) {
@@ -117,84 +120,65 @@ export class TokenController {
             'code_verifier is invalid!'
           );
         }
-        const accessToken = uuid();
-        await redisClient.setex(
-          `auth:access_token:${userInfo.id}:${accessToken}`,
-          config.accessTokenLifeTime,
-          JSON.stringify(userInfo)
-        );
+        const accessToken = await setAccessToken({
+          client_id,
+          user_id,
+          scope,
+        });
         let refreshToken;
-        if (client.grantTypes.includes(GrantType.refresh_token)) {
-          refreshToken = uuid();
-          await redisClient.setex(
-            `auth:refresh_token:${userInfo.id}:${refreshToken}`,
-            config.refreshTokenLifeTime,
-            JSON.stringify(userInfo)
-          );
-          await redisClient.setex(
-            `auth:refresh_token:${refreshToken}`,
-            config.refreshTokenLifeTime,
-            JSON.stringify(userInfo)
-          );
+        if (client.grant_types.includes(GrantType.refresh_token)) {
+          refreshToken = await setRefreshToken({
+            client_id,
+            user_id,
+            scope,
+          });
         }
         return {
           access_token: accessToken,
           token_type: 'Bearer',
-          expires_in: config.accessTokenLifeTime,
+          expires_in: CONFIG.accessTokenLifeTime,
+          id_token: genNormalJwt({ scope, client_id: client.id, user_id }),
           refresh_token: refreshToken,
           scope: scope_,
         };
       }
       case GrantType.client_credentials: {
-        const accessToken = uuid();
-        await redisClient.setex(
-          `auth:access_token:${client_id}:${accessToken}`,
-          config.accessTokenLifeTime,
-          JSON.stringify(client)
-        );
+        const accessToken = await setAccessToken({ client_id, scope });
         let refreshToken;
-        if (client.grantTypes.includes(GrantType.refresh_token)) {
-          refreshToken = uuid();
-          await redisClient.setex(
-            `auth:refresh_token:${client_id}:${refreshToken}`,
-            config.refreshTokenLifeTime,
-            JSON.stringify(client)
-          );
-          await redisClient.setex(
-            `auth:refresh_token:${refreshToken}`,
-            config.refreshTokenLifeTime,
-            JSON.stringify(client)
-          );
+        if (client.grant_types.includes(GrantType.refresh_token)) {
+          refreshToken = await setRefreshToken({ client_id, scope });
         }
         return {
           access_token: accessToken,
           token_type: 'Bearer',
-          expires_in: config.accessTokenLifeTime,
+          expires_in: CONFIG.accessTokenLifeTime,
           refresh_token: refreshToken,
+          id_token: genNormalJwt({ scope, client_id: client.client_id }),
           scope: scope,
         };
       }
       case GrantType.refresh_token: {
-        const userInfoStr = await redisClient.get(
-          `auth:refresh_token:${refresh_token}`
-        );
-        if (!userInfoStr) {
+        const info = await getRefreshTokenInfo(refresh_token!);
+        if (!info || info.client_id !== client_id) {
           throw getResponseError(
             ResponseErrorType.INVALID_GRANT,
             'refresh_token is invalid!'
           );
         }
-        const accessToken = uuid();
-        const userInfo = JSON.parse(userInfoStr);
-        await redisClient.setex(
-          `auth:access_token:${userInfo.id}:${accessToken}`,
-          config.accessTokenLifeTime,
-          userInfoStr
-        );
+        const accessToken = await setAccessToken({
+          client_id: info.client_id,
+          user_id: info.user_id,
+          scope: info.scope,
+        });
         return {
           access_token: accessToken,
           token_type: 'Bearer',
-          expires_in: config.accessTokenLifeTime,
+          expires_in: CONFIG.accessTokenLifeTime,
+          id_token: genNormalJwt({
+            client_id: client.client_id,
+            user_id: info.user_id,
+            scope: info.scope,
+          }),
           scope: scope,
           refresh_token: refresh_token,
         };

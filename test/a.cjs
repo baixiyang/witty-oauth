@@ -27,9 +27,4 @@ publicKey = fs.readFileSync('public.pem');
 // Sign JWT using private key
 const payload = { sub: '1234567890', name: 'John Doe' ,d: 'adfasdkf;alkdf;aksdf;askdfj', b: 'adf;alsdkfj;akdsjf;aksdjf;aksdjf;aksdjf;aksdjf;aksdjf;aksdjf;aksdjf;aksdfj;adskfj;asdkfj;askdjf;aksdjf;aksdjf;aksdjf;aksdjf;aksdjf;aksdfj;aksdjf;aksdjf;akdsfj'};
 const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' });
-jwt.verify(token, publicKey, { algorithms: ['RS256'] }, (err, decoded) => {
-if (err) {
-    console.log(err);
-} else {
-    console.log(decoded);
-}});
+console.log(11,jwt.verify(token, publicKey))

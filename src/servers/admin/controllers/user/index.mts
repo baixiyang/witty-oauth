@@ -11,15 +11,15 @@ import {
 } from 'wittyna';
 import { prismaClient } from '../../index.mjs';
 import { UserRole, User } from '@prisma/client';
-import sha256 from 'crypto-js/sha256';
+import { sha256 } from '../../../../utils/encrypt.mjs';
 
 @Controller('user')
 export class UserController {
-  select = { id: true, username: true, email: true, role: true };
+  select = { id: true, username: true, email: true, roles: true };
   @Post()
   async createUser(@Body() @Required() @Required('password') user: User) {
     // 只能组册普通用户
-    user.role = UserRole.USER;
+    user.roles = [UserRole.USER];
     return prismaClient.user.create({
       data: user,
       select: this.select,
@@ -28,9 +28,9 @@ export class UserController {
   @Put()
   async updateUser(@Body() @Required() @Required('id') user: User) {
     // 只能组册普通用户
-    user.role = UserRole.USER;
+    user.roles = [UserRole.USER];
     if (user.password) {
-      user.password = sha256(user.password).toString();
+      user.password = sha256(user.password);
     }
     return prismaClient.user.update({
       where: {
@@ -50,9 +50,12 @@ export class UserController {
     });
   }
   @Get()
-  async getList(@Query('pageNo') pageNo = 1, @Query('pageSize') pageSize = 10) {
+  async getList(
+    @Query('currentPage') currentPage = 1,
+    @Query('pageSize') pageSize = 10
+  ) {
     return prismaClient.user.findMany({
-      skip: (pageNo - 1) * pageSize,
+      skip: (currentPage - 1) * pageSize,
       take: pageSize,
       select: this.select,
     });
