@@ -6,12 +6,10 @@ import { getAccessTokenInfo } from '../../utils/token.mjs';
 import { getJwtInfo, isJwt } from '../../utils/jwt.mjs';
 import jwt from 'jsonwebtoken';
 
-@Controller('user-info')
+@Controller('user/info')
 export class UserInfoController {
   @Get()
   async getUserInfo(
-    @Query('client_id') @Required() client_id: string,
-    @Query('client_secret') @Required() client_secret: string,
     @Required()
     @Header('Authorization')
     authorization: string
@@ -19,28 +17,6 @@ export class UserInfoController {
     const token = authorization.split('Bearer ')[1];
     if (!token) {
       throw getResponseError(ResponseErrorType.INVALID_TOKEN, 'invalid_token!');
-    }
-
-    const client = await prismaClient.client.findUnique({
-      where: {
-        client_id: client_id,
-      },
-    });
-    // 判断是否存在客户端
-    if (!client) {
-      throw getResponseError(
-        ResponseErrorType.INVALID_CLIENT,
-        'unknown client!',
-        401
-      );
-    }
-    // 判断client_secret是否正确
-    if (client.client_secret !== client_secret) {
-      throw getResponseError(
-        ResponseErrorType.INVALID_CLIENT,
-        'Client secret is not correct!',
-        401
-      );
     }
     let info;
     if (isJwt(token)) {
@@ -52,7 +28,7 @@ export class UserInfoController {
     } else {
       info = await getAccessTokenInfo(token);
     }
-    if (!info || !info.user_id || info.client_id !== client_id) {
+    if (!info || !info.user_id) {
       throw getResponseError(
         ResponseErrorType.INVALID_TOKEN,
         'Token is illegal or expired',

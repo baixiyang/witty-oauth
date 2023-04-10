@@ -1,4 +1,4 @@
-import { Controller, Get, Required, Query } from 'wittyna';
+import { Controller, Required, Query, Post, Header, Reg } from 'wittyna';
 import { prismaClient, redisClient } from '../../index.mjs';
 import { CodeChallengeMethod, ResponseErrorType } from '../../type.mjs';
 import { Scope, GrantType } from '@prisma/client';
@@ -8,6 +8,8 @@ import { getResponseError } from '../../utils/error.mjs';
 import { genNormalJwt } from '../../utils/jwt.mjs';
 import { sha256 } from '../../../../utils/encrypt.mjs';
 import {
+  ACCESS_TOKEN_REG,
+  getAccessTokenInfo,
   getRefreshTokenInfo,
   setAccessToken,
   setRefreshToken,
@@ -16,7 +18,7 @@ import {
 @Controller('token')
 export class TokenController {
   // 该接口在oauth2.1中规定只用于授权码模式
-  @Get()
+  @Post()
   async getToken(
     @Query('client_id') @Required() client_id: string,
     @Query('client_secret') @Required() client_secret: string,
@@ -184,5 +186,22 @@ export class TokenController {
         };
       }
     }
+  }
+  @Post('info')
+  async validateToken(
+    @Header('access_token')
+    @Required()
+    @Reg(ACCESS_TOKEN_REG)
+    authorization: string
+  ) {
+    const info = await getAccessTokenInfo(authorization);
+    if (!info) {
+      throw getResponseError(
+        ResponseErrorType.INVALID_TOKEN,
+        'Token is illegal or expired',
+        401
+      );
+    }
+    return info;
   }
 }

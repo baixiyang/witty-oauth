@@ -72,6 +72,9 @@ export async function getRefreshTokenInfo(
 export async function getAccessTokenInfo(
   access_token: string
 ): Promise<{ user_id: string; client_id: string; scope: string } | undefined> {
+  if (access_token.indexOf('Bearer ') === 0) {
+    access_token = access_token.slice(7);
+  }
   const string = await redisClient.get(
     `${RedisKeyPrefix.ACCESS_TOKEN_PREFIX}${access_token}`
   );
@@ -82,15 +85,26 @@ export async function getAccessTokenInfo(
 
 // todo 性能优化
 export async function clearAllTokenOfUser(userId: string) {
-  const access_tokens = await redisClient.get(
-    `${RedisKeyPrefix.ACCESS_TOKEN_ARR_PREFIX}${userId}`
-  );
-  if (access_tokens) {
-    await redisClient.del(`${RedisKeyPrefix.ACCESS_TOKEN_ARR_PREFIX}${userId}`);
-    for (const access_token of access_tokens) {
-      await redisClient.del(
-        `${RedisKeyPrefix.ACCESS_TOKEN_PREFIX}${access_token}`
+  for (const [tokenArrPrefix, tokenPrefix] of [
+    [
+      RedisKeyPrefix.ACCESS_TOKEN_ARR_PREFIX,
+      RedisKeyPrefix.ACCESS_TOKEN_PREFIX,
+    ],
+    [
+      RedisKeyPrefix.REFRESH_TOKEN_ARR_PREFIX,
+      RedisKeyPrefix.REFRESH_TOKEN_PREFIX,
+    ],
+  ]) {
+    const tokens = await redisClient.smembers(`${tokenArrPrefix}${userId}`);
+    if (tokens) {
+      const promiseArr = tokens.map((token) =>
+        redisClient.del(`${tokenPrefix}${token}`)
       );
+      promiseArr.push(redisClient.del(`${tokenArrPrefix}${userId}`));
+      await Promise.all(promiseArr);
     }
   }
 }
+
+export const ACCESS_TOKEN_REG =
+  /^Bearer [a-f0-9]{8}\-([a-f0-9]{4}\-){3}[a-f0-9]{12}$/;

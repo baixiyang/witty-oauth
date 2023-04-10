@@ -19,11 +19,15 @@ export function genNormalJwt({
 }
 
 export function getJwtInfo(jwt_: string): JwtPayload | undefined {
-  const res = jwt.verify(jwt_, CONFIG.jwtPublicKey) as JwtPayload;
-  if (res.exp * 1000 < Date.now()) {
+  try {
+    const res = jwt.verify(jwt_, CONFIG.jwtPublicKey) as JwtPayload;
+    if (res.exp * 1000 < Date.now()) {
+      return undefined;
+    }
+    return res;
+  } catch (e) {
     return undefined;
   }
-  return res;
 }
 
 export function isJwt(jwt: string) {
