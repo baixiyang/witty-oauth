@@ -7,7 +7,6 @@ import { getResponseError } from '../../utils/error.mjs';
 import { ResponseErrorType } from '../../type.mjs';
 @Controller('logout')
 export class LoginController {
-  // todo code_challenge
   @Get()
   async logout(
     @Query('access_token')
@@ -41,6 +40,10 @@ export class LoginController {
     session.user_id = '';
     // 清除token 和refresh_token
     await clearAllTokenOfUser(info.user_id);
-    // todo redirect_uri
+    if (redirect_uri) {
+      ctx.redirect(redirect_uri);
+      return;
+    }
+    return 'logout success!';
   }
 }

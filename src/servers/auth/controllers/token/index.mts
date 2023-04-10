@@ -76,12 +76,7 @@ export class TokenController {
             'code is required!'
           );
         }
-        if (!code_verifier) {
-          throw getResponseError(
-            ResponseErrorType.INVALID_REQUEST,
-            'code_verifier is required!'
-          );
-        }
+
         const codeInfo = await redisClient.get(`auth:code:${code}`);
         if (!codeInfo) {
           throw getResponseError(
@@ -97,6 +92,7 @@ export class TokenController {
           code_challenge,
           code_challenge_method,
         } = JSON.parse(codeInfo);
+
         // 判断redirect_uri是否合法
         if (redirect_uri !== redirect_uri_) {
           throw getResponseError(
@@ -110,18 +106,36 @@ export class TokenController {
             'code is invalid!'
           );
         }
-        // 不必管code_challenge_method是否合法，因为在生成code时已经判断过了，这里只需要判断code_challenge是否正确
-        if (
-          (code_challenge_method === CodeChallengeMethod.s256 &&
-            code_challenge !== sha256(code_verifier)) ||
-          (code_challenge_method === CodeChallengeMethod.plain &&
-            code_challenge !== code_verifier)
-        ) {
+        if (!code_verifier && code_challenge) {
           throw getResponseError(
-            ResponseErrorType.INVALID_GRANT,
-            'code_verifier is invalid!'
+            ResponseErrorType.INVALID_REQUEST,
+            'code_verifier is required!'
           );
         }
+        if (code_challenge) {
+          if (
+            code_challenge_method === CodeChallengeMethod.s256 ||
+            code_challenge_method === CodeChallengeMethod.plain
+          ) {
+            if (
+              (code_challenge_method === CodeChallengeMethod.s256 &&
+                code_challenge !== sha256(code_verifier!)) ||
+              (code_challenge_method === CodeChallengeMethod.plain &&
+                code_challenge !== code_verifier)
+            ) {
+              throw getResponseError(
+                ResponseErrorType.INVALID_GRANT,
+                'code_verifier is invalid!'
+              );
+            }
+          } else {
+            throw getResponseError(
+              ResponseErrorType.INVALID_GRANT,
+              'code_verifier is invalid!'
+            );
+          }
+        }
+
         const accessToken = await setAccessToken({
           client_id,
           user_id,

@@ -13,12 +13,13 @@ import { getResponseError } from '../../utils/error.mjs';
 
 @Controller('authorize')
 export class AuthController {
-  // 该接口在oauth2.1中规定只用于授权码模式
+  // 该接口在oauth2.1中规定只用于授权码模式,
+  // 由于在SSO场景中不太适用PKCE，暂时对是否 PKCE 不做限制，按oauth2.1标准处理是必须要 PKCE 的
   @Get()
   async authorize(
     @Query('response_type') @Required() response_type: string,
     @Query('client_id') @Required() client_id: string,
-    @Query('code_challenge') @Required() code_challenge: string,
+    @Query('code_challenge') code_challenge: string,
     @Query('code_challenge_method')
     code_challenge_method = CodeChallengeMethod.plain,
     @Query('redirect_uri') redirect_uri: string | undefined,
@@ -107,17 +108,20 @@ export class AuthController {
         'scope beyond range!'
       );
     }
+    redirect_uri = redirect_uri || client.redirect_uris[0];
     // 判断用户是否登录
     if (!user_id) {
       ctx.redirect(
-        `/login?redirect_uri=${encodeURIComponent(
-          ctx.request.url
-        )}&client_id=${client_id}&scope=${scope}`
+        `/auth/login?redirect_uri=${encodeURIComponent(
+          ctx.request.originalUrl
+        )}&client_id=${encodeURIComponent(
+          client_id
+        )}&scope=${encodeURIComponent(scope || '')}`
       );
       return;
     }
+
     // 生成授权码code的逻辑
-    redirect_uri = redirect_uri || client.redirect_uris[0];
     const code = Math.random().toString(36).slice(2);
     const ttl = CONFIG.authorizationCodeLifeTime;
     const key = `auth:code:${code}`;
@@ -125,7 +129,7 @@ export class AuthController {
       key,
       ttl,
       JSON.stringify({
-        user_id: user_id,
+        user_id,
         client_id,
         redirect_uri,
         scope,
