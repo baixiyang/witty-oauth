@@ -83,7 +83,6 @@ export async function getAccessTokenInfo(
   }
 }
 
-// todo 性能优化
 export async function clearAllTokenOfUser(userId: string) {
   for (const [tokenArrPrefix, tokenPrefix] of [
     [
