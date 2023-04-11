@@ -7,7 +7,7 @@ export const CONFIG = {
     desc: 'system',
     client_id: 'system',
     client_secret: '42ea9BE#',
-    redirectUris: ['https://www.baidu.com'],
+    redirect_uris: ['https://www.baidu.com'],
   },
   systemAdminUsers: [
     {

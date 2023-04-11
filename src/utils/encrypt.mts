@@ -1,3 +1,3 @@
 import { createHash } from 'node:crypto';
 export const sha256 = (data: string) =>
-  createHash('sha256').update(data).digest('base64');
+  createHash('sha256').update(data).digest('base64url');

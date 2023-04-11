@@ -34,7 +34,7 @@ model Client {
   client_secret String      @db.VarChar(256)
   type          ClientType  @default(NORMAL)
   redirect_uris String[]    @default([]) @db.VarChar(512)
-  grant_types   GrantType[] @default([authorization_code, refresh_token])
+  grant_types   GrantType[] @default([authorization_code, refresh_token, client_credentials])
   // 客户端需要的授权范围
   scopes        Scope[]     @default([id, username, email, phone, roles])
   created_at    DateTime    @default(now()) @db.Timestamp()

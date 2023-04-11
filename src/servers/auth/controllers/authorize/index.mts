@@ -28,6 +28,8 @@ export class AuthController {
     @Session('user_id') user_id: string | undefined,
     ctx: Context
   ) {
+    // mock login
+    // user_id = 'admin';
     const client = await prismaClient.client.findUnique({
       where: {
         client_id: client_id,

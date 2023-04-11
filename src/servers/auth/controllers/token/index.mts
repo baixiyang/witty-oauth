@@ -24,9 +24,7 @@ export class TokenController {
     @Query('client_secret') @Required() client_secret: string,
     @Query('grant_type') @Required() grant_type: string,
     @Query('code') code: string | undefined,
-    @Query('redirect_uri') redirect_uri: string | undefined,
     @Query('code_verifier') code_verifier: string | undefined,
-    @Query('scope') scope: string | undefined,
     @Query('refresh_token') refresh_token: string | undefined,
     ctx: Context
   ) {
@@ -51,16 +49,6 @@ export class TokenController {
         401
       );
     }
-    // 判断scope是否合法
-    if (
-      scope &&
-      scope.split(' ').some((item) => !client.scopes.includes(item as Scope))
-    ) {
-      throw getResponseError(
-        ResponseErrorType.INVALID_SCOPE,
-        'scope beyond range!'
-      );
-    }
     // 判断grant_type是否合法
     if (!client.grant_types.includes(grant_type as GrantType)) {
       throw getResponseError(
@@ -78,6 +66,7 @@ export class TokenController {
         }
 
         const codeInfo = await redisClient.get(`auth:code:${code}`);
+        await redisClient.del(`auth:code:${code}`);
         if (!codeInfo) {
           throw getResponseError(
             ResponseErrorType.INVALID_GRANT,
@@ -87,19 +76,10 @@ export class TokenController {
         const {
           user_id,
           client_id,
-          scope: scope_,
-          redirect_uri: redirect_uri_,
+          scope,
           code_challenge,
           code_challenge_method,
         } = JSON.parse(codeInfo);
-
-        // 判断redirect_uri是否合法
-        if (redirect_uri !== redirect_uri_) {
-          throw getResponseError(
-            ResponseErrorType.INVALID_GRANT,
-            'redirect_uri is invalid!'
-          );
-        }
         if (client_id !== client.client_id) {
           throw getResponseError(
             ResponseErrorType.INVALID_GRANT,
@@ -153,24 +133,27 @@ export class TokenController {
           access_token: accessToken,
           token_type: 'Bearer',
           expires_in: CONFIG.accessTokenLifeTime,
-          id_token: genNormalJwt({ scope, client_id: client.id, user_id }),
+          id_token: genNormalJwt({
+            scope,
+            client_id: client.id,
+            user_id,
+          }),
           refresh_token: refreshToken,
-          scope: scope_,
+          scope,
         };
       }
       case GrantType.client_credentials: {
-        const accessToken = await setAccessToken({ client_id, scope });
+        const accessToken = await setAccessToken({ client_id });
         let refreshToken;
         if (client.grant_types.includes(GrantType.refresh_token)) {
-          refreshToken = await setRefreshToken({ client_id, scope });
+          refreshToken = await setRefreshToken({ client_id });
         }
         return {
           access_token: accessToken,
           token_type: 'Bearer',
           expires_in: CONFIG.accessTokenLifeTime,
           refresh_token: refreshToken,
-          id_token: genNormalJwt({ scope, client_id: client.client_id }),
-          scope: scope,
+          id_token: genNormalJwt({ client_id: client.client_id }),
         };
       }
       case GrantType.refresh_token: {
@@ -195,7 +178,7 @@ export class TokenController {
             user_id: info.user_id,
             scope: info.scope,
           }),
-          scope: scope,
+          scope: info.scope,
           refresh_token: refresh_token,
         };
       }
