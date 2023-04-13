@@ -45,6 +45,7 @@ model Client {
 enum ClientType {
   SYSTEM
   NORMAL
+  THREE_PART
 }
 
 enum Scope {

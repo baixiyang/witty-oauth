@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import { createRequire } from 'module';
+import { dirname } from 'path';
 const require = createRequire(import.meta.url);
 
 export const CONFIG = {
@@ -42,4 +43,5 @@ export const CONFIG = {
   adminIss: 'https://admin.wittyna.com',
   jwtPrivateKey: fs.readFileSync(require.resolve('./pem/private.pem')),
   jwtPublicKey: fs.readFileSync(require.resolve('./pem/public.pem')),
+  authStaticRoot: dirname(new URL(import.meta.url).pathname) + '/authStatic',
 };

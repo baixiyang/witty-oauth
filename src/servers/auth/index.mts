@@ -3,6 +3,7 @@ import {
   responseMiddleWare,
   sessionMiddleWare,
   startServer,
+  staticMiddleWare,
 } from 'wittyna';
 import { PrismaClient } from '@prisma/client';
 import * as controllers from './controllers/index.mjs';
@@ -17,12 +18,15 @@ export const redisClient = new Redis({
   db: CONFIG.redis.db,
 });
 await init();
-
 startServer({
   port: 5555,
   controllers: Object.values(controllers),
   routerPrefix: '/auth',
   middlewares: [
+    staticMiddleWare({
+      root: CONFIG.authStaticRoot,
+      path: '/auth/login/',
+    }),
     sessionMiddleWare({
       redisOptions: {
         host: CONFIG.redis.host,

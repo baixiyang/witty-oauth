@@ -19,13 +19,14 @@ export class AuthController {
   async authorize(
     @Query('response_type') @Required() response_type: string,
     @Query('client_id') @Required() client_id: string,
-    @Query('code_challenge') code_challenge: string,
+    @Query('code_challenge') @Required() code_challenge: string,
     @Query('code_challenge_method')
     code_challenge_method = CodeChallengeMethod.plain,
     @Query('redirect_uri') redirect_uri: string | undefined,
     @Query('scope') scope: string | undefined,
     @Query('state') state: string | undefined,
     @Session('user_id') user_id: string | undefined,
+    @Session() session: any,
     ctx: Context
   ) {
     // mock login
@@ -111,15 +112,12 @@ export class AuthController {
       );
     }
     redirect_uri = redirect_uri || client.redirect_uris[0];
-    // 判断用户是否登录
+    // 如何用户没有登陆或者没有确认都会跳转到登陆页面。// todo 三方应用需要确认。
     if (!user_id) {
-      ctx.redirect(
-        `/auth/login?redirect_uri=${encodeURIComponent(
-          ctx.request.originalUrl
-        )}&client_id=${encodeURIComponent(
-          client_id
-        )}&scope=${encodeURIComponent(scope || '')}`
-      );
+      session.redirect_uri = ctx.request.originalUrl;
+      session.client_id = client_id;
+      session.scope = scope;
+      ctx.redirect(`/auth/login/`);
       return;
     }
 

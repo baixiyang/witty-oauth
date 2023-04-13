@@ -13,7 +13,7 @@ import { clearAllTokenOfUser, getAccessTokenInfo } from '../../utils/token.mjs';
 import { getResponseError } from '../../utils/error.mjs';
 import { ResponseErrorType } from '../../type.mjs';
 @Controller('logout')
-export class LoginController {
+export class LogoutController {
   @Get()
   async logout(
     @Query('access_token')
@@ -33,14 +33,14 @@ export class LoginController {
     } else if (id_token) {
       info = getJwtInfo(id_token);
     }
+    ctx.session = null;
     if (info && info.user_id) {
       await clearAllTokenOfUser(info.user_id);
-      session.user_id = '';
-      if (redirect_uri) {
-        ctx.redirect(redirect_uri);
-        return;
-      }
-      return 'logout success!';
     }
+    if (redirect_uri) {
+      ctx.redirect(redirect_uri);
+      return;
+    }
+    return 'logout success!';
   }
 }
