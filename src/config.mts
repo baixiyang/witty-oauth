@@ -5,10 +5,10 @@ const require = createRequire(import.meta.url);
 
 export const CONFIG = {
   systemClient: {
-    desc: 'system',
-    client_id: 'system',
+    desc: 'admin',
+    client_id: 'admin',
     client_secret: '42ea9BE#',
-    redirect_uris: ['https://www.baidu.com'],
+    redirect_uris: ['http://localhost:5566/admin/authorize'],
   },
   systemAdminUsers: [
     {
@@ -43,5 +43,6 @@ export const CONFIG = {
   adminIss: 'https://admin.wittyna.com',
   jwtPrivateKey: fs.readFileSync(require.resolve('./pem/private.pem')),
   jwtPublicKey: fs.readFileSync(require.resolve('./pem/public.pem')),
-  authStaticRoot: dirname(new URL(import.meta.url).pathname) + '/authStatic',
+  authStaticRoot: dirname(new URL(import.meta.url).pathname) + '/static/auth',
+  adminStaticRoot: dirname(new URL(import.meta.url).pathname) + '/static/admin',
 };

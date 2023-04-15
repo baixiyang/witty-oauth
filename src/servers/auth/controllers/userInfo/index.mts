@@ -4,14 +4,13 @@ import { getResponseError } from '../../utils/error.mjs';
 import { ResponseErrorType } from '../../type.mjs';
 import { getAccessTokenInfo } from '../../utils/token.mjs';
 import { getJwtInfo, isJwt } from '../../utils/jwt.mjs';
-import jwt from 'jsonwebtoken';
 
 @Controller('user/info')
 export class UserInfoController {
   @Get()
   async getUserInfo(
     @Required()
-    @Header('Authorization')
+    @Header('authorization')
     authorization: string
   ) {
     const token = authorization.split('Bearer ')[1];

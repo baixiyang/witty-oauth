@@ -37,6 +37,7 @@ export class LogoutController {
     if (info && info.user_id) {
       await clearAllTokenOfUser(info.user_id);
     }
+    session.user_id = '';
     if (redirect_uri) {
       ctx.redirect(redirect_uri);
       return;

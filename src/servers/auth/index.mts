@@ -25,7 +25,7 @@ startServer({
   middlewares: [
     staticMiddleWare({
       root: CONFIG.authStaticRoot,
-      path: '/auth/login/',
+      path: '/auth/login',
     }),
     sessionMiddleWare({
       redisOptions: {
