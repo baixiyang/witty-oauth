@@ -5,6 +5,7 @@ import { sha256 } from '../../utils/encrypt.mjs';
 
 export async function init() {
   const systemClient = CONFIG.systemClient;
+  const normalClients = CONFIG.normalClients;
   const systemAdminUsers = CONFIG.systemAdminUsers;
   await prismaClient.$transaction([
     ...systemAdminUsers.map((user) =>
@@ -39,6 +40,23 @@ export async function init() {
         type: ClientType.SYSTEM,
       },
     }),
+    ...normalClients.map((normalClient) => {
+      return prismaClient.client.upsert({
+        where: {
+          client_id: normalClient.client_id,
+        },
+        create: {
+          ...normalClient,
+          client_secret: normalClient.client_secret,
+          type: ClientType.SYSTEM,
+        },
+        update: {
+          ...normalClient,
+          client_secret: normalClient.client_secret,
+          type: ClientType.SYSTEM,
+        },
+      });
+    }),
     prismaClient.client.update({
       where: {
         client_id: systemClient.client_id,
@@ -50,6 +68,20 @@ export async function init() {
           })),
         },
       },
+    }),
+    ...normalClients.map((normalClient) => {
+      return prismaClient.client.update({
+        where: {
+          client_id: normalClient.client_id,
+        },
+        data: {
+          users: {
+            connect: systemAdminUsers.map((user) => ({
+              username: user.username,
+            })),
+          },
+        },
+      });
     }),
   ]);
 }

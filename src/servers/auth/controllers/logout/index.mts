@@ -24,7 +24,7 @@ export class LogoutController {
     redirect_uri: string,
     ctx: Context
   ) {
-    const session = ctx.session as unknown as { user_id: string };
+    const session = ctx.session as any;
     let info;
     if (session.user_id) {
       info = { user_id: session.user_id };
@@ -33,11 +33,10 @@ export class LogoutController {
     } else if (id_token) {
       info = getJwtInfo(id_token);
     }
-    ctx.session = null;
     if (info && info.user_id) {
       await clearAllTokenOfUser(info.user_id);
     }
-    session.user_id = '';
+    ctx.session = null;
     if (redirect_uri) {
       ctx.redirect(redirect_uri);
       return;

@@ -117,7 +117,7 @@ export class AuthController {
       session.redirect_uri = ctx.request.originalUrl;
       session.client_id = client_id;
       session.scope = scope;
-      ctx.redirect(`/auth/login/`);
+      ctx.redirect(`/`);
       return;
     }
 

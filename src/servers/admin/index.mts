@@ -19,7 +19,8 @@ startServer({
   middlewares: [
     staticMiddleWare({
       root: CONFIG.adminStaticRoot,
-      path: '/admin/ui',
+      pathPrefix: '',
+      ignorePathPrefix: '/admin',
     }),
     sessionMiddleWare({
       redisOptions: {
@@ -28,6 +29,7 @@ startServer({
         db: CONFIG.redis.db,
       },
       sessionOptions: {
+        key: 'admin:sid',
         ttl: CONFIG.sessionLeftTime ? CONFIG.sessionLeftTime * 1000 : undefined,
       },
     }),
@@ -35,7 +37,7 @@ startServer({
       client_id: CONFIG.systemClient.client_id,
       client_secret: CONFIG.systemClient.client_secret,
       apiPrefix: `${CONFIG.adminIss}/admin`,
-      uiUrl: `${CONFIG.adminIss}/admin/ui`,
+      uiUrl: CONFIG.adminIss,
       authServerOrigin: CONFIG.authIss,
     }),
     responseMiddleWare(),

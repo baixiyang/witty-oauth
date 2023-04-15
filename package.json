@@ -6,7 +6,7 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "rm -rf ./dist && tsc && cp -r ./src/static ./dist",
-    "dev": "prisma db push && nodemon --watch 'src/**/*.ts' --exec 'node --loader ts-node/esm --experimental-specifier-resolution=node src/index.mts'",
+    "dev": "prisma db push && nodemon --watch 'src/**/*.ts' --exec 'ENV=development node --loader ts-node/esm --experimental-specifier-resolution=node src/index.mts'",
     "release": "tsc && npm publish"
   },
   "keywords": [],
@@ -24,7 +24,7 @@
     "jsonwebtoken": "^9.0.0",
     "koa-static": "^5.0.0",
     "uuid": "^9.0.0",
-    "wittyna": "^0.0.7"
+    "wittyna": "^0.0.9"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^5.48.1",

@@ -25,7 +25,8 @@ startServer({
   middlewares: [
     staticMiddleWare({
       root: CONFIG.authStaticRoot,
-      path: '/auth/login',
+      pathPrefix: '',
+      ignorePathPrefix: '/auth',
     }),
     sessionMiddleWare({
       redisOptions: {
@@ -35,6 +36,7 @@ startServer({
       },
       sessionOptions: {
         prefix: 'auth:sid:',
+        key: 'auth:sid',
         ttl: CONFIG.sessionLeftTime ? CONFIG.sessionLeftTime * 1000 : undefined,
       },
     }),
