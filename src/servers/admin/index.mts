@@ -34,9 +34,9 @@ startServer({
     authMiddleWare({
       client_id: CONFIG.systemClient.client_id,
       client_secret: CONFIG.systemClient.client_secret,
-      apiPrefix: 'http://localhost:5566/admin',
-      uiUrl: 'http://localhost:5566/admin/ui',
-      authServerOrigin: 'http://0.0.0.0:5555',
+      apiPrefix: `${CONFIG.adminIss}/admin`,
+      uiUrl: `${CONFIG.adminIss}/admin/ui`,
+      authServerOrigin: CONFIG.authIss,
     }),
     responseMiddleWare(),
     bodyMiddleWare(),
