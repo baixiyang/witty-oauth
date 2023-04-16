@@ -10,7 +10,10 @@ export const CONFIG = {
     client_id: 'admin',
     client_secret: '42ea9BE#',
     redirect_uris: [
+      // 用于本地直接起服务调试。
       'http://127.0.0.1:5566/admin/authorize',
+      // 用于ui界面调试。
+      'http://127.0.0.1:5567/admin/authorize',
       'https://admin.wittyna.com/admin/authorize',
     ],
   },
@@ -21,6 +24,7 @@ export const CONFIG = {
       client_secret: '42ea9BE#',
       redirect_uris: [
         'https://tool.wittyna.com/tool/authorize',
+        // 用于ui界面调试。
         'http://127.0.0.1:3000/tool/authorize',
       ],
     },

@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf ./dist && tsc && cp -r ./src/static ./dist",
+    "build": "rm -rf ./dist && tsc && cp -r ./src/static ./dist && cp -r ./src/pem ./dist",
     "dev": "prisma db push && nodemon --watch 'src/**/*.ts' --exec 'ENV=development node --loader ts-node/esm --experimental-specifier-resolution=node src/index.mts'",
     "release": "tsc && npm publish"
   },
