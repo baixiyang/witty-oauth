@@ -3,7 +3,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "build": "rm -rf ./dist && tsc && cp -r ./src/pem ./dist && mkdir ./dist/ui",
+    "build": "prisma db push && rm -rf ./dist && tsc && cp -r ./src/pem ./dist && mkdir ./dist/ui",
     "dev": "prisma db push && nodemon --watch 'src/**/*.ts' --exec 'ENV=development node --loader ts-node/esm --experimental-specifier-resolution=node src/index.mts'"
   },
   "keywords": [],
