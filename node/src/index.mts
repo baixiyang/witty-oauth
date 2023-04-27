@@ -7,7 +7,6 @@ import {
 } from 'wittyna';
 import { PrismaClient } from '@prisma/client';
 import * as controllers from './controllers/index.mjs';
-import { init } from './init.mjs';
 import Redis from 'ioredis';
 import { CONFIG } from './config.mjs';
 
@@ -17,7 +16,6 @@ export const redisClient = new Redis({
   port: CONFIG.redis.port,
   db: CONFIG.redis.db,
 });
-await init();
 startServer({
   port: CONFIG.port,
   controllers: Object.values(controllers),
