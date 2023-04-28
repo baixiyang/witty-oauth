@@ -120,6 +120,25 @@ export class AuthController {
       ctx.redirect(`/`);
       return;
     }
+    const user = await prismaClient.user.findUnique({
+      where: {
+        id: user_id,
+      },
+      select: {
+        clients: {
+          where: {
+            client_id,
+          },
+        },
+      },
+    });
+    if (!user?.clients[0]) {
+      session.user_id = undefined;
+      session.redirect_uri = ctx.request.originalUrl;
+      session.client_id = client_id;
+      session.scope = scope;
+      return `<html><body><p>You do not have permission to access this client. Please <a href="/">login again</a></p></body></html>`;
+    }
 
     // 生成授权码code的逻辑
     const code = Math.random().toString(36).slice(2);
