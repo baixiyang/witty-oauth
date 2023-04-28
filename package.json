@@ -1,7 +1,7 @@
 {
-  "name": "wittyna-auth",
+  "name": "wittyna-admin",
   "type": "module",
-  "version": "0.0.3",
+  "version": "0.0.1",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
@@ -11,7 +11,45 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^4.11.0",
+    "@types/crypto-js": "^4.1.1",
+    "@types/jsonwebtoken": "^9.0.1",
+    "@types/koa-static": "^4.0.2",
+    "@types/lodash-es": "^4.17.6",
+    "@types/node": "18.11.18",
+    "@types/uuid": "^9.0.1",
+    "axios": "^1.3.5",
+    "jsonwebtoken": "^9.0.0",
+    "koa-static": "^5.0.0",
+    "uuid": "^9.0.0",
+    "wittyna": "^0.0.10",
+    "prisma": "^4.11.0",
+
+    "@types/axios": "^0.14.0",
+    "naive-ui": "^2.34.3",
+    "vue": "^3.2.47"
+  },
   "devDependencies": {
-    "concurrently": "^8.0.1"
+    "concurrently": "^8.0.1",
+
+    "@typescript-eslint/eslint-plugin": "^5.58.0",
+    "@typescript-eslint/parser": "^5.58.0",
+    "eslint": "^8.38.0",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "nodemon": "^2.0.22",
+    "prettier": "^2.8.7",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.9.4",
+
+    "@vitejs/plugin-vue": "^4.1.0",
+    "eslint-plugin-vue": "^9.10.0",
+    "sass": "^1.62.0",
+    "unplugin-auto-import": "^0.15.2",
+    "unplugin-vue-components": "^0.24.1",
+    "vite": "^4.2.0",
+    "vite-plugin-eslint": "^1.8.1",
+    "vue-tsc": "^1.2.0"
   }
 }
