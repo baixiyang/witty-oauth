@@ -32,7 +32,7 @@ model Client {
   desc          String?     @db.VarChar(256)
   client_id     String      @unique @db.VarChar(256)
   client_secret String      @db.VarChar(256)
-  type          ClientType  @default(NORMAL)
+  type          ClientType  @default(OFFICIAL)
   redirect_uris String[]    @default([]) @db.VarChar(512)
   grant_types   GrantType[] @default([authorization_code, refresh_token, client_credentials])
   // 客户端需要的授权范围
@@ -44,7 +44,7 @@ model Client {
 
 enum ClientType {
   SYSTEM
-  NORMAL
+  OFFICIAL
   THREE_PART
 }
 
