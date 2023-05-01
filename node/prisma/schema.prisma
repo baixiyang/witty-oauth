@@ -11,20 +11,15 @@ datasource db {
 }
 
 model User {
-  id         String     @id @unique @default(uuid()) @db.VarChar(64)
-  username   String     @unique @db.VarChar(256)
-  password   String     @db.VarChar(256)
-  roles      UserRole[] @default([USER])
-  email      String?    @unique
-  phone      String?    @unique
-  created_at DateTime   @default(now()) @db.Timestamp()
-  updated_at DateTime   @updatedAt @db.Timestamp()
-  clients    Client[]
-}
-
-enum UserRole {
-  USER
-  SYSTEM_ADMIN
+  id              String   @id @unique @default(uuid()) @db.VarChar(64)
+  username        String   @unique @db.VarChar(256)
+  password        String   @db.VarChar(256)
+  is_system_admin Boolean  @default(false)
+  email           String?  @unique
+  phone           String?  @unique
+  created_at      DateTime @default(now()) @db.Timestamp()
+  updated_at      DateTime @updatedAt @db.Timestamp()
+  clients         Client[]
 }
 
 model Client {
@@ -32,11 +27,11 @@ model Client {
   desc          String?     @db.VarChar(256)
   client_id     String      @unique @db.VarChar(256)
   client_secret String      @db.VarChar(256)
-  type          ClientType  @default(OFFICIAL)
+  type          ClientType  @default(THREE_PART)
   redirect_uris String[]    @default([]) @db.VarChar(512)
   grant_types   GrantType[] @default([authorization_code, refresh_token, client_credentials])
   // 客户端需要的授权范围
-  scopes        Scope[]     @default([id, username, email, phone, roles])
+  scopes        Scope[]     @default([id, username, email, phone])
   created_at    DateTime    @default(now()) @db.Timestamp()
   updated_at    DateTime    @updatedAt @db.Timestamp()
   users         User[]
@@ -53,7 +48,6 @@ enum Scope {
   username
   email
   phone
-  roles
 }
 
 // 授权类型

@@ -38,7 +38,7 @@ export class UserInfoController {
       id: true,
       username: true,
       email: true,
-      roles: true,
+      is_system_admin: true,
       phone: true,
     } as Record<string, boolean>;
     if (info.scope) {
