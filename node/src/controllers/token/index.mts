@@ -25,12 +25,11 @@ export class TokenController {
     @Query('grant_type') @Required() grant_type: string,
     @Query('code') code: string | undefined,
     @Query('code_verifier') code_verifier: string | undefined,
-    @Query('refresh_token') refresh_token: string | undefined,
-    ctx: Context
+    @Query('refresh_token') refresh_token: string | undefined
   ) {
     const client = await prismaClient.client.findUnique({
       where: {
-        client_id: client_id,
+        id: client_id,
       },
     });
     // 判断是否存在客户端
@@ -42,7 +41,7 @@ export class TokenController {
       );
     }
     // 判断client_secret是否正确
-    if (client.client_secret !== client_secret) {
+    if (client.secret !== client_secret) {
       throw getResponseError(
         ResponseErrorType.INVALID_CLIENT,
         'Client secret is not correct!',
@@ -80,7 +79,7 @@ export class TokenController {
           code_challenge,
           code_challenge_method,
         } = JSON.parse(codeInfo);
-        if (client_id !== client.client_id) {
+        if (client_id !== client.id) {
           throw getResponseError(
             ResponseErrorType.INVALID_GRANT,
             'code is invalid!'
@@ -153,7 +152,7 @@ export class TokenController {
           token_type: 'Bearer',
           expires_in: CONFIG.accessTokenLifeTime,
           refresh_token: refreshToken,
-          id_token: genNormalJwt({ client_id: client.client_id }),
+          id_token: genNormalJwt({ client_id: client.id }),
         };
       }
       case GrantType.refresh_token: {
@@ -174,7 +173,7 @@ export class TokenController {
           token_type: 'Bearer',
           expires_in: CONFIG.accessTokenLifeTime,
           id_token: genNormalJwt({
-            client_id: client.client_id,
+            client_id: client.id,
             user_id: info.user_id,
             scope: info.scope,
           }),

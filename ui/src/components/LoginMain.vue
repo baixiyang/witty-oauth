@@ -12,7 +12,11 @@
       <NInput v-model:value="model.username" />
     </NFormItem>
     <NFormItem label="password" path="password">
-      <NInput v-model:value="model.password" type="password" />
+      <NInput
+        v-model:value="model.password"
+        type="password"
+        @keydown.enter="loginHandler"
+      />
     </NFormItem>
     <div class="login-button-wrapper">
       <NButton

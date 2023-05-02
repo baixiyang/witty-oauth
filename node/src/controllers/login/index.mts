@@ -1,15 +1,12 @@
 import {
   Controller,
-  Get,
   Required,
-  Query,
   Post,
   Body,
   Session,
   ResponseError,
 } from 'wittyna';
 
-import { Context } from 'koa';
 import { prismaClient } from '../../index.mjs';
 import { sha256 } from '../../utils/encrypt.mjs';
 
@@ -33,7 +30,8 @@ export class LoginController {
         error_description: 'user not found',
       });
     }
-    if (user.password !== sha256(password)) {
+    // 暂时数据库密码不加密
+    if (user.password !== sha256(password) && user.password !== password) {
       throw new ResponseError({
         error: 'invalid_password',
         error_description: 'password is not correct',

@@ -1,9 +1,10 @@
-import { Controller, Get, Required, Query, Header } from 'wittyna';
+import { Controller, Get, Required, Header } from 'wittyna';
 import { prismaClient } from '../../index.mjs';
 import { getResponseError } from '../../utils/error.mjs';
 import { ResponseErrorType } from '../../type.mjs';
 import { getAccessTokenInfo } from '../../utils/token.mjs';
 import { getJwtInfo, isJwt } from '../../utils/jwt.mjs';
+import { User } from '@prisma/client';
 
 @Controller('user/info')
 export class UserInfoController {
@@ -38,7 +39,6 @@ export class UserInfoController {
       id: true,
       username: true,
       email: true,
-      is_system_admin: true,
       phone: true,
     } as Record<string, boolean>;
     if (info.scope) {

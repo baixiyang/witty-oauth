@@ -33,7 +33,7 @@ export class AuthController {
     // user_id = 'admin';
     const client = await prismaClient.client.findUnique({
       where: {
-        client_id: client_id,
+        id: client_id,
       },
     });
     // 判断是否存在客户端
@@ -120,19 +120,15 @@ export class AuthController {
       ctx.redirect(`/`);
       return;
     }
-    const user = await prismaClient.user.findUnique({
+    const client2User = await prismaClient.client2User.findUnique({
       where: {
-        id: user_id,
+        client_id_user_id: { user_id, client_id },
       },
       select: {
-        clients: {
-          where: {
-            client_id,
-          },
-        },
+        user: true,
       },
     });
-    if (!user?.clients[0]) {
+    if (!client2User) {
       session.user_id = undefined;
       session.redirect_uri = ctx.request.originalUrl;
       session.client_id = client_id;

@@ -11,30 +11,41 @@ datasource db {
 }
 
 model User {
-  id              String   @id @unique @default(uuid()) @db.VarChar(64)
-  username        String   @unique @db.VarChar(256)
-  password        String   @db.VarChar(256)
-  is_system_admin Boolean  @default(false)
-  email           String?  @unique
-  phone           String?  @unique
-  created_at      DateTime @default(now()) @db.Timestamp()
-  updated_at      DateTime @updatedAt @db.Timestamp()
-  clients         Client[]
+  id             String        @id @unique @default(uuid()) @db.VarChar(64)
+  username       String        @unique @db.VarChar(256)
+  password       String        @db.VarChar(256)
+  email          String?       @unique
+  phone          String?       @unique
+  created_at     DateTime      @default(now()) @db.Timestamp()
+  updated_at     DateTime      @updatedAt @db.Timestamp()
+  client2UserArr Client2User[]
 }
 
 model Client {
-  id            String      @id @unique @default(uuid()) @db.VarChar(64)
-  desc          String?     @db.VarChar(256)
-  client_id     String      @unique @db.VarChar(256)
-  client_secret String      @db.VarChar(256)
-  type          ClientType  @default(THREE_PART)
-  redirect_uris String[]    @default([]) @db.VarChar(512)
-  grant_types   GrantType[] @default([authorization_code, refresh_token, client_credentials])
+  id             String        @id @unique @default(uuid()) @db.VarChar(256)
+  secret         String        @db.VarChar(256)
+  desc           String?       @db.VarChar(256)
+  type           ClientType    @default(THREE_PART)
+  redirect_uris  String[]      @default([]) @db.VarChar(512)
+  grant_types    GrantType[]   @default([authorization_code, refresh_token, client_credentials])
   // 客户端需要的授权范围
-  scopes        Scope[]     @default([id, username, email, phone])
-  created_at    DateTime    @default(now()) @db.Timestamp()
-  updated_at    DateTime    @updatedAt @db.Timestamp()
-  users         User[]
+  scopes         Scope[]       @default([id, username, email, phone])
+  created_at     DateTime      @default(now()) @db.Timestamp()
+  updated_at     DateTime      @updatedAt @db.Timestamp()
+  client2UserArr Client2User[]
+}
+
+model Client2User {
+  client          Client    @relation(fields: [client_id], references: [id])
+  user            User      @relation(fields: [user_id], references: [id])
+  client_id       String    @db.VarChar(64)
+  user_id         String    @db.VarChar(64)
+  is_client_admin Boolean   @default(false)
+  created_at      DateTime  @default(now()) @db.Timestamp()
+  updated_at      DateTime  @updatedAt @db.Timestamp()
+  expires_at      DateTime? @db.Timestamp()
+
+  @@id([client_id, user_id])
 }
 
 enum ClientType {
