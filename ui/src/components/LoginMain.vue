@@ -25,8 +25,9 @@
         size="large"
         :loading="loading"
         @click="loginHandler"
-        >login</NButton
       >
+        login
+      </NButton>
     </div>
   </NForm>
 </template>

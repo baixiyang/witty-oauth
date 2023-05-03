@@ -19,6 +19,8 @@ model User {
   created_at     DateTime      @default(now()) @db.Timestamp()
   updated_at     DateTime      @updatedAt @db.Timestamp()
   client2UserArr Client2User[]
+
+  @@index([id])
 }
 
 model Client {
@@ -33,6 +35,8 @@ model Client {
   created_at     DateTime      @default(now()) @db.Timestamp()
   updated_at     DateTime      @updatedAt @db.Timestamp()
   client2UserArr Client2User[]
+
+  @@index([id])
 }
 
 model Client2User {
@@ -46,6 +50,7 @@ model Client2User {
   expires_at      DateTime? @db.Timestamp()
 
   @@id([client_id, user_id])
+  @@index([client_id, user_id])
 }
 
 enum ClientType {

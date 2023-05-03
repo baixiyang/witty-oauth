@@ -1,10 +1,10 @@
-import { Controller, Get, Required, Header } from 'wittyna';
+import { Controller, Get, Required, Header, ResponseError } from 'wittyna';
 import { prismaClient } from '../../index.mjs';
 import { getResponseError } from '../../utils/error.mjs';
 import { ResponseErrorType } from '../../type.mjs';
 import { getAccessTokenInfo } from '../../utils/token.mjs';
 import { getJwtInfo, isJwt } from '../../utils/jwt.mjs';
-import { User } from '@prisma/client';
+import { Client2User, User } from '@prisma/client';
 
 @Controller('user/info')
 export class UserInfoController {
@@ -51,11 +51,29 @@ export class UserInfoController {
         {} as Record<string, boolean>
       );
     }
-    return prismaClient.user.findUnique({
+    const user = await prismaClient.user.findUnique({
       where: {
         id: info.user_id,
       },
-      select,
+      select: {
+        ...select,
+        client2UserArr: {
+          where: {
+            client_id: info.client_id,
+          },
+        },
+      },
     });
+    if (!user) {
+      throw new ResponseError({
+        error: 'no user found',
+      });
+    }
+    return {
+      ...user,
+      is_client_admin: user.client2UserArr?.[0]?.is_client_admin,
+      expires_at: user.client2UserArr?.[0]?.expires_at,
+      client2UserArr: undefined,
+    };
   }
 }
