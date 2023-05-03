@@ -4,5 +4,5 @@ cd ./ui
 npm run build
 cd ../node
 npm run build
-mv ../ui/dist ./dist/ui
 mv ./dist ../dist
+mv ../ui/dist ../dist/ui
