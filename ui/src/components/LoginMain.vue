@@ -26,7 +26,7 @@
         :loading="loading"
         @click="loginHandler"
       >
-        login
+        Login
       </NButton>
     </div>
   </NForm>
@@ -71,16 +71,12 @@ async function loginHandler() {
 
 <style scoped lang="scss">
 .login {
-  background: rgb(122, 123, 128);
+  border: 1px solid #e2e2e2;
   border-radius: 8px;
   height: 350px;
   width: 400px;
   box-sizing: border-box;
   padding: 20px 20px;
-  //display: flex;
-  //flex-direction: column;
-  //align-items: center;
-  //justify-content: center;
   .login-title {
     margin-bottom: 30px;
     font-size: 30px;
