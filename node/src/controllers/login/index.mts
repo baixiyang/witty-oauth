@@ -37,16 +37,16 @@ export class LoginController {
         error_description: 'password is not correct',
       });
     }
-    if (!session.client_id || !session.redirect_uri) {
+    if (!session.clientId || !session.redirectUri) {
       // todo 重定向到默认客户端
       throw new ResponseError({
         error: 'No authorization client',
         error_description: 'No authorization client',
       });
     }
-    session.user_id = user.id;
+    session.userId = user.id;
     return {
-      redirect_uri: session.redirect_uri,
+      redirectUri: session.redirectUri,
     };
   }
 }

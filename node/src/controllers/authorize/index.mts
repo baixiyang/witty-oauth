@@ -5,7 +5,7 @@ import {
   ResponseErrorType,
   ResponseType,
 } from '../../type.mjs';
-import { Scope, GrantType } from '@prisma/client';
+import { GrantType } from '@prisma/client';
 import { Context } from 'koa';
 import { remove } from 'lodash-es';
 import { CONFIG } from '../../config.mjs';
@@ -17,23 +17,23 @@ export class AuthController {
   // 由于在SSO场景中不太适用PKCE，暂时对是否 PKCE 不做限制，按oauth2.1标准处理是必须要 PKCE 的
   @Get()
   async authorize(
-    @Query('response_type') @Required() response_type: string,
-    @Query('client_id') @Required() client_id: string,
-    @Query('code_challenge') @Required() code_challenge: string,
+    @Query('response_type') @Required() responseType: string,
+    @Query('client_id') @Required() clientId: string,
+    @Query('code_challenge') @Required() codeChallenge: string,
     @Query('code_challenge_method')
-    code_challenge_method = CodeChallengeMethod.plain,
-    @Query('redirect_uri') redirect_uri: string | undefined,
+    codeChallengeMethod = CodeChallengeMethod.plain,
+    @Query('redirect_uri') redirectUri: string | undefined,
     @Query('scope') scope: string | undefined,
     @Query('state') state: string | undefined,
-    @Session('user_id') user_id: string | undefined,
+    @Session('userId') userId: string | undefined,
     @Session() session: any,
     ctx: Context
   ) {
     // mock login
-    // user_id = 'admin';
+    // userId = 'admin';
     const client = await prismaClient.client.findUnique({
       where: {
-        id: client_id,
+        id: clientId,
       },
     });
     // 判断是否存在客户端
@@ -45,7 +45,7 @@ export class AuthController {
     }
 
     // 判断是否为code 授权模式
-    if (response_type !== ResponseType.code) {
+    if (responseType !== ResponseType.code) {
       throw getResponseError(
         ResponseErrorType.UNSUPPORTED_RESPONSE_TYPE,
         'response_type is not supported!'
@@ -53,8 +53,8 @@ export class AuthController {
     }
     // 判断客户端是否支持code授权模式
     if (
-      response_type === ResponseType.code &&
-      !client.grant_types.includes(GrantType.authorization_code)
+      responseType === ResponseType.code &&
+      !client.grantTypes.includes(GrantType.authorization_code)
     ) {
       throw getResponseError(
         ResponseErrorType.UNAUTHORIZED_CLIENT,
@@ -62,15 +62,15 @@ export class AuthController {
       );
     }
     // 判断是否支持code_challenge_method
-    if (!CodeChallengeMethod[code_challenge_method as CodeChallengeMethod]) {
+    if (!CodeChallengeMethod[codeChallengeMethod as CodeChallengeMethod]) {
       throw getResponseError(
         ResponseErrorType.INVALID_REQUEST,
         'invalid code_challenge_method'
       );
     }
     // 判断redirect_uri是否合法
-    if (redirect_uri) {
-      const clientRedirectUris = client.redirect_uris.map((uri) => {
+    if (redirectUri) {
+      const clientRedirectUris = client.redirectUris.map((uri) => {
         try {
           return new URL(uri);
         } catch (e) {
@@ -80,7 +80,7 @@ export class AuthController {
       remove(clientRedirectUris, (item) => !item);
       let redirectRri: URL;
       try {
-        redirectRri = new URL(redirect_uri);
+        redirectRri = new URL(redirectUri);
       } catch (error) {
         throw getResponseError(
           ResponseErrorType.INVALID_REDIRECT_URI,
@@ -101,37 +101,27 @@ export class AuthController {
         );
       }
     }
-    // 判断scope是否合法
-    if (
-      scope &&
-      scope.split(' ').some((item) => !client.scopes.includes(item as Scope))
-    ) {
-      throw getResponseError(
-        ResponseErrorType.INVALID_SCOPE,
-        'scope beyond range!'
-      );
-    }
-    redirect_uri = redirect_uri || client.redirect_uris[0];
+    redirectUri = redirectUri || client.redirectUris[0];
     // 如何用户没有登陆或者没有确认都会跳转到登陆页面。// todo 三方应用需要确认。
-    if (!user_id) {
-      session.redirect_uri = ctx.request.originalUrl;
-      session.client_id = client_id;
+    if (!userId) {
+      session.redirectUri = ctx.request.originalUrl;
+      session.clientId = clientId;
       session.scope = scope;
       ctx.redirect(`/`);
       return;
     }
     const client2User = await prismaClient.client2User.findUnique({
       where: {
-        client_id_user_id: { user_id, client_id },
+        clientId_userId: { userId, clientId },
       },
       select: {
         user: true,
       },
     });
     if (!client2User) {
-      session.user_id = undefined;
-      session.redirect_uri = ctx.request.originalUrl;
-      session.client_id = client_id;
+      session.userId = undefined;
+      session.redirectUri = ctx.request.originalUrl;
+      session.clientId = clientId;
       session.scope = scope;
       return `<html><body><p>You do not have permission to access this client. Please <a href="/">login again</a></p></body></html>`;
     }
@@ -144,22 +134,22 @@ export class AuthController {
       key,
       ttl,
       JSON.stringify({
-        user_id,
-        client_id,
-        redirect_uri,
+        userId,
+        clientId,
+        redirectUri,
         scope,
         state,
-        code_challenge,
-        code_challenge_method,
+        codeChallenge,
+        codeChallengeMethod,
       })
     );
     // 重定向到客户端
-    const redirectUri = new URL(redirect_uri);
-    redirectUri.searchParams.set('code', code);
+    const redirectUri_ = new URL(redirectUri!);
+    redirectUri_.searchParams.set('code', code);
     if (state) {
-      redirectUri.searchParams.set('state', state);
+      redirectUri_.searchParams.set('state', state);
     }
-    redirectUri.searchParams.set('iss', CONFIG.iss);
-    ctx.redirect(redirectUri.href);
+    redirectUri_.searchParams.set('iss', CONFIG.iss);
+    ctx.redirect(redirectUri_.href);
   }
 }

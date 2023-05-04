@@ -16,11 +16,9 @@ model User {
   password       String        @db.VarChar(256)
   email          String?       @unique
   phone          String?       @unique
-  created_at     DateTime      @default(now()) @db.Timestamp()
-  updated_at     DateTime      @updatedAt @db.Timestamp()
+  createdAt      DateTime      @default(now()) @db.Timestamp()
+  updatedAt      DateTime      @updatedAt @db.Timestamp()
   client2UserArr Client2User[]
-
-  @@index([id])
 }
 
 model Client {
@@ -28,29 +26,25 @@ model Client {
   secret         String        @db.VarChar(256)
   desc           String?       @db.VarChar(256)
   type           ClientType    @default(THREE_PART)
-  redirect_uris  String[]      @default([]) @db.VarChar(512)
-  grant_types    GrantType[]   @default([authorization_code, refresh_token, client_credentials])
+  redirectUris   String[]      @default([]) @db.VarChar(512)
+  grantTypes     GrantType[]   @default([authorization_code, refresh_token, client_credentials])
   // 客户端需要的授权范围
-  scopes         Scope[]       @default([id, username, email, phone])
-  created_at     DateTime      @default(now()) @db.Timestamp()
-  updated_at     DateTime      @updatedAt @db.Timestamp()
+  createdAt      DateTime      @default(now()) @db.Timestamp()
+  updatedAt      DateTime      @updatedAt @db.Timestamp()
   client2UserArr Client2User[]
-
-  @@index([id])
 }
 
 model Client2User {
-  client          Client    @relation(fields: [client_id], references: [id])
-  user            User      @relation(fields: [user_id], references: [id])
-  client_id       String    @db.VarChar(64)
-  user_id         String    @db.VarChar(64)
-  is_client_admin Boolean   @default(false)
-  created_at      DateTime  @default(now()) @db.Timestamp()
-  updated_at      DateTime  @updatedAt @db.Timestamp()
-  expires_at      DateTime? @db.Timestamp()
+  client        Client    @relation(fields: [clientId], references: [id])
+  user          User      @relation(fields: [userId], references: [id])
+  clientId      String    @db.VarChar(64)
+  userId        String    @db.VarChar(64)
+  isClientAdmin Boolean   @default(false)
+  createdAt     DateTime  @default(now()) @db.Timestamp()
+  updatedAt     DateTime  @updatedAt @db.Timestamp()
+  expiresAt     DateTime? @db.Timestamp()
 
-  @@id([client_id, user_id])
-  @@index([client_id, user_id])
+  @@id([clientId, userId])
 }
 
 enum ClientType {

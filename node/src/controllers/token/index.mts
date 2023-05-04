@@ -1,8 +1,7 @@
 import { Controller, Required, Query, Post, Header, Reg } from 'wittyna';
 import { prismaClient, redisClient } from '../../index.mjs';
 import { CodeChallengeMethod, ResponseErrorType } from '../../type.mjs';
-import { Scope, GrantType } from '@prisma/client';
-import { Context } from 'koa';
+import { GrantType } from '@prisma/client';
 import { CONFIG } from '../../config.mjs';
 import { getResponseError } from '../../utils/error.mjs';
 import { genNormalJwt } from '../../utils/jwt.mjs';
@@ -20,16 +19,16 @@ export class TokenController {
   // 该接口在oauth2.1中规定只用于授权码模式
   @Post()
   async getToken(
-    @Query('client_id') @Required() client_id: string,
-    @Query('client_secret') @Required() client_secret: string,
-    @Query('grant_type') @Required() grant_type: string,
+    @Query('client_id') @Required() clientId: string,
+    @Query('client_secret') @Required() clientSecret: string,
+    @Query('grant_type') @Required() grantType: string,
     @Query('code') code: string | undefined,
-    @Query('code_verifier') code_verifier: string | undefined,
-    @Query('refresh_token') refresh_token: string | undefined
+    @Query('code_verifier') codeVerifier: string | undefined,
+    @Query('refresh_token') refreshToken: string | undefined
   ) {
     const client = await prismaClient.client.findUnique({
       where: {
-        id: client_id,
+        id: clientId,
       },
     });
     // 判断是否存在客户端
@@ -41,7 +40,7 @@ export class TokenController {
       );
     }
     // 判断client_secret是否正确
-    if (client.secret !== client_secret) {
+    if (client.secret !== clientSecret) {
       throw getResponseError(
         ResponseErrorType.INVALID_CLIENT,
         'Client secret is not correct!',
@@ -49,13 +48,13 @@ export class TokenController {
       );
     }
     // 判断grant_type是否合法
-    if (!client.grant_types.includes(grant_type as GrantType)) {
+    if (!client.grantTypes.includes(grantType as GrantType)) {
       throw getResponseError(
         ResponseErrorType.UNSUPPORTED_GRANT_TYPE,
         'grant_type is not supported!'
       );
     }
-    switch (grant_type) {
+    switch (grantType) {
       case GrantType.authorization_code: {
         if (!code) {
           throw getResponseError(
@@ -72,35 +71,30 @@ export class TokenController {
             'code is invalid!'
           );
         }
-        const {
-          user_id,
-          client_id,
-          scope,
-          code_challenge,
-          code_challenge_method,
-        } = JSON.parse(codeInfo);
-        if (client_id !== client.id) {
+        const { userId, clientId, scope, codeChallenge, codeChallengeMethod } =
+          JSON.parse(codeInfo);
+        if (clientId !== client.id) {
           throw getResponseError(
             ResponseErrorType.INVALID_GRANT,
             'code is invalid!'
           );
         }
-        if (!code_verifier && code_challenge) {
+        if (!codeVerifier && codeChallenge) {
           throw getResponseError(
             ResponseErrorType.INVALID_REQUEST,
             'code_verifier is required!'
           );
         }
-        if (code_challenge) {
+        if (codeChallenge) {
           if (
-            code_challenge_method === CodeChallengeMethod.s256 ||
-            code_challenge_method === CodeChallengeMethod.plain
+            codeChallengeMethod === CodeChallengeMethod.s256 ||
+            codeChallengeMethod === CodeChallengeMethod.plain
           ) {
             if (
-              (code_challenge_method === CodeChallengeMethod.s256 &&
-                code_challenge !== sha256(code_verifier!)) ||
-              (code_challenge_method === CodeChallengeMethod.plain &&
-                code_challenge !== code_verifier)
+              (codeChallengeMethod === CodeChallengeMethod.s256 &&
+                codeChallenge !== sha256(codeVerifier!)) ||
+              (codeChallengeMethod === CodeChallengeMethod.plain &&
+                codeChallenge !== codeVerifier)
             ) {
               throw getResponseError(
                 ResponseErrorType.INVALID_GRANT,
@@ -116,15 +110,15 @@ export class TokenController {
         }
 
         const accessToken = await setAccessToken({
-          client_id,
-          user_id,
+          clientId,
+          userId,
           scope,
         });
         let refreshToken;
-        if (client.grant_types.includes(GrantType.refresh_token)) {
+        if (client.grantTypes.includes(GrantType.refresh_token)) {
           refreshToken = await setRefreshToken({
-            client_id,
-            user_id,
+            clientId,
+            userId,
             scope,
           });
         }
@@ -134,38 +128,38 @@ export class TokenController {
           expires_in: CONFIG.accessTokenLifeTime,
           id_token: genNormalJwt({
             scope,
-            client_id: client.id,
-            user_id,
+            clientId: client.id,
+            userId,
           }),
           refresh_token: refreshToken,
           scope,
         };
       }
       case GrantType.client_credentials: {
-        const accessToken = await setAccessToken({ client_id });
+        const accessToken = await setAccessToken({ clientId });
         let refreshToken;
-        if (client.grant_types.includes(GrantType.refresh_token)) {
-          refreshToken = await setRefreshToken({ client_id });
+        if (client.grantTypes.includes(GrantType.refresh_token)) {
+          refreshToken = await setRefreshToken({ clientId });
         }
         return {
           access_token: accessToken,
           token_type: 'Bearer',
           expires_in: CONFIG.accessTokenLifeTime,
           refresh_token: refreshToken,
-          id_token: genNormalJwt({ client_id: client.id }),
+          id_token: genNormalJwt({ clientId: client.id }),
         };
       }
       case GrantType.refresh_token: {
-        const info = await getRefreshTokenInfo(refresh_token!);
-        if (!info || info.client_id !== client_id) {
+        const info = await getRefreshTokenInfo(refreshToken!);
+        if (!info || info.clientId !== clientId) {
           throw getResponseError(
             ResponseErrorType.INVALID_GRANT,
             'refresh_token is invalid!'
           );
         }
         const accessToken = await setAccessToken({
-          client_id: info.client_id,
-          user_id: info.user_id,
+          clientId: info.clientId,
+          userId: info.userId,
           scope: info.scope,
         });
         return {
@@ -173,12 +167,12 @@ export class TokenController {
           token_type: 'Bearer',
           expires_in: CONFIG.accessTokenLifeTime,
           id_token: genNormalJwt({
-            client_id: client.id,
-            user_id: info.user_id,
+            clientId: client.id,
+            userId: info.userId,
             scope: info.scope,
           }),
           scope: info.scope,
-          refresh_token: refresh_token,
+          refresh_token: refreshToken,
         };
       }
     }

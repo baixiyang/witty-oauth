@@ -4,7 +4,6 @@ import { getResponseError } from '../../utils/error.mjs';
 import { ResponseErrorType } from '../../type.mjs';
 import { getAccessTokenInfo } from '../../utils/token.mjs';
 import { getJwtInfo, isJwt } from '../../utils/jwt.mjs';
-import { Client2User, User } from '@prisma/client';
 
 @Controller('user/info')
 export class UserInfoController {
@@ -21,14 +20,14 @@ export class UserInfoController {
     let info;
     if (isJwt(token)) {
       info = getJwtInfo(token) as {
-        user_id: string;
-        client_id: string;
+        userId: string;
+        clientId: string;
         scope: string;
       };
     } else {
       info = await getAccessTokenInfo(token);
     }
-    if (!info || !info.user_id) {
+    if (!info || !info.userId) {
       throw getResponseError(
         ResponseErrorType.INVALID_TOKEN,
         'Token is illegal or expired',
@@ -53,13 +52,13 @@ export class UserInfoController {
     }
     const user = await prismaClient.user.findUnique({
       where: {
-        id: info.user_id,
+        id: info.userId,
       },
       select: {
         ...select,
         client2UserArr: {
           where: {
-            client_id: info.client_id,
+            clientId: info.clientId,
           },
         },
       },
@@ -71,8 +70,8 @@ export class UserInfoController {
     }
     return {
       ...user,
-      is_client_admin: user.client2UserArr?.[0]?.is_client_admin,
-      expires_at: user.client2UserArr?.[0]?.expires_at,
+      isClientAdmin: user.client2UserArr?.[0]?.isClientAdmin,
+      expiresAt: user.client2UserArr?.[0]?.expiresAt,
       client2UserArr: undefined,
     };
   }

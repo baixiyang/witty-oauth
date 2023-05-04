@@ -1,18 +1,18 @@
 import jwt from 'jsonwebtoken';
 import { CONFIG } from '../config.mjs';
 export function genNormalJwt({
-  client_id,
-  user_id,
+  clientId,
+  userId,
   scope,
 }: {
-  client_id: string;
-  user_id?: string;
+  clientId: string;
+  userId?: string;
   scope?: string;
 }) {
-  return jwt.sign({ user_id, client_id, scope }, CONFIG.jwtPrivateKey, {
+  return jwt.sign({ userId, clientId, scope }, CONFIG.jwtPrivateKey, {
     issuer: CONFIG.iss,
-    subject: user_id || client_id,
-    audience: user_id ? client_id : '',
+    subject: userId || clientId,
+    audience: userId ? clientId : '',
     expiresIn: CONFIG.jwtLifeTime,
     algorithm: 'RS256',
   });
@@ -34,8 +34,8 @@ export function isJwt(jwt: string) {
   return jwt.indexOf('.') > 1;
 }
 interface JwtPayload extends BaseJwtPayload {
-  user_id: string;
-  client_id: string;
+  userId: string;
+  clientId: string;
   scope: string;
 }
 interface BaseJwtPayload {

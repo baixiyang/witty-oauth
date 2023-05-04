@@ -17,28 +17,28 @@ export class LogoutController {
   @Get()
   async logout(
     @Query('access_token')
-    access_token: string,
+    accessToken: string,
     @Query('id_token')
-    id_token: string,
+    idToken: string,
     @Query('redirect_uri')
-    redirect_uri: string,
+    redirectUri: string,
     ctx: Context
   ) {
     const session = ctx.session as any;
     let info;
-    if (session.user_id) {
-      info = { user_id: session.user_id };
-    } else if (access_token) {
-      info = await getAccessTokenInfo(access_token);
-    } else if (id_token) {
-      info = getJwtInfo(id_token);
+    if (session.userId) {
+      info = { userId: session.userId };
+    } else if (accessToken) {
+      info = await getAccessTokenInfo(accessToken);
+    } else if (idToken) {
+      info = getJwtInfo(idToken);
     }
-    if (info && info.user_id) {
-      await clearAllTokenOfUser(info.user_id);
+    if (info && info.userId) {
+      await clearAllTokenOfUser(info.userId);
     }
     ctx.session = null;
-    if (redirect_uri) {
-      ctx.redirect(redirect_uri);
+    if (redirectUri) {
+      ctx.redirect(redirectUri);
       return;
     }
     return 'logout success!';

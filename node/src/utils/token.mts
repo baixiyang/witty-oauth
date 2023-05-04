@@ -8,61 +8,61 @@ enum RedisKeyPrefix {
   REFRESH_TOKEN_PREFIX = 'auth:refresh_token:',
 }
 export async function setAccessToken({
-  user_id,
-  client_id,
+  userId,
+  clientId,
   scope,
 }: {
-  client_id: string;
-  user_id?: string;
+  clientId: string;
+  userId?: string;
   scope?: string;
 }): Promise<string> {
   const token = uuid();
   await redisClient.sadd(
-    `${RedisKeyPrefix.ACCESS_TOKEN_ARR_PREFIX}${user_id || client_id}`,
+    `${RedisKeyPrefix.ACCESS_TOKEN_ARR_PREFIX}${userId || clientId}`,
     token
   );
   await redisClient.expire(
-    `${RedisKeyPrefix.ACCESS_TOKEN_ARR_PREFIX}${user_id || client_id}`,
+    `${RedisKeyPrefix.ACCESS_TOKEN_ARR_PREFIX}${userId || clientId}`,
     CONFIG.accessTokenLifeTime
   );
   await redisClient.setex(
     `${RedisKeyPrefix.ACCESS_TOKEN_PREFIX}${token}`,
     CONFIG.accessTokenLifeTime,
-    JSON.stringify({ user_id, client_id, scope })
+    JSON.stringify({ userId, clientId, scope })
   );
   return token;
 }
 export async function setRefreshToken({
-  user_id,
-  client_id,
+  userId,
+  clientId,
   scope,
 }: {
-  client_id: string;
-  user_id?: string;
+  clientId: string;
+  userId?: string;
   scope?: string;
 }): Promise<string> {
   const token = uuid();
   await redisClient.sadd(
-    `${RedisKeyPrefix.REFRESH_TOKEN_ARR_PREFIX}${user_id || client_id}`,
+    `${RedisKeyPrefix.REFRESH_TOKEN_ARR_PREFIX}${userId || clientId}`,
     token
   );
   await redisClient.expire(
-    `${RedisKeyPrefix.REFRESH_TOKEN_ARR_PREFIX}${user_id || client_id}`,
+    `${RedisKeyPrefix.REFRESH_TOKEN_ARR_PREFIX}${userId || clientId}`,
     CONFIG.refreshTokenLifeTime
   );
   await redisClient.setex(
     `${RedisKeyPrefix.REFRESH_TOKEN_PREFIX}${token}`,
     CONFIG.refreshTokenLifeTime,
-    JSON.stringify({ user_id, client_id, scope })
+    JSON.stringify({ userId, clientId, scope })
   );
   return token;
 }
 
 export async function getRefreshTokenInfo(
-  refresh_token: string
-): Promise<{ user_id: string; client_id: string; scope: string } | undefined> {
+  refreshToken: string
+): Promise<{ userId: string; clientId: string; scope: string } | undefined> {
   const string = await redisClient.get(
-    `${RedisKeyPrefix.REFRESH_TOKEN_PREFIX}${refresh_token}`
+    `${RedisKeyPrefix.REFRESH_TOKEN_PREFIX}${refreshToken}`
   );
   if (string) {
     return JSON.parse(string);
@@ -70,13 +70,13 @@ export async function getRefreshTokenInfo(
 }
 
 export async function getAccessTokenInfo(
-  access_token: string
-): Promise<{ user_id: string; client_id: string; scope: string } | undefined> {
-  if (access_token.indexOf('Bearer ') === 0) {
-    access_token = access_token.slice(7);
+  accessToken: string
+): Promise<{ userId: string; clientId: string; scope: string } | undefined> {
+  if (accessToken.indexOf('Bearer ') === 0) {
+    accessToken = accessToken.slice(7);
   }
   const string = await redisClient.get(
-    `${RedisKeyPrefix.ACCESS_TOKEN_PREFIX}${access_token}`
+    `${RedisKeyPrefix.ACCESS_TOKEN_PREFIX}${accessToken}`
   );
   if (string) {
     return JSON.parse(string);
