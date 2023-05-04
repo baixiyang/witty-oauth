@@ -60,9 +60,9 @@ async function loginHandler() {
   await form.value?.validate();
   loading.value = true;
   try {
-    const { redirectUri } = await login(model);
+    const { redirect_uri } = await login(model);
     // eslint-disable-next-line no-debugger
-    location.href = redirectUri;
+    location.href = redirect_uri;
   } finally {
     loading.value = false;
   }

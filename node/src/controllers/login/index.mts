@@ -46,7 +46,7 @@ export class LoginController {
     }
     session.userId = user.id;
     return {
-      redirectUri: session.redirectUri,
+      redirect_uri: session.redirectUri,
     };
   }
 }

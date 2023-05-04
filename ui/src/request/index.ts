@@ -24,6 +24,6 @@ request.interceptors.response.use(
 export const login = (data: {
   username: string;
   password: string;
-}): Promise<{ redirectUri: string }> => {
+}): Promise<{ redirect_uri: string }> => {
   return request.post('/auth/login', data);
 };
