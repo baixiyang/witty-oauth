@@ -1,4 +1,12 @@
-import { Controller, Required, Query, Post, Header, Reg } from 'wittyna';
+import {
+  Controller,
+  Required,
+  Query,
+  Post,
+  Header,
+  Reg,
+  ResponseError,
+} from 'wittyna';
 import { prismaClient, redisClient } from '../../index.mjs';
 import { CodeChallengeMethod, ResponseErrorType } from '../../type.mjs';
 import { GrantType } from '@prisma/client';
@@ -151,12 +159,32 @@ export class TokenController {
       }
       case GrantType.refresh_token: {
         const info = await getRefreshTokenInfo(refreshToken!);
+
         if (!info || info.clientId !== clientId) {
           throw getResponseError(
             ResponseErrorType.INVALID_GRANT,
             'refresh_token is invalid!'
           );
         }
+        const client2User = await prismaClient.client2User.findUnique({
+          where: {
+            clientId_userId: { userId: info.userId, clientId },
+          },
+          select: {
+            user: true,
+            expiresAt: true,
+          },
+        });
+        if (
+          !client2User ||
+          (client2User.expiresAt &&
+            client2User.expiresAt.getTime() < Date.now())
+        ) {
+          throw new ResponseError({
+            error: 'user permission of client is expired !',
+          });
+        }
+
         const accessToken = await setAccessToken({
           clientId: info.clientId,
           userId: info.userId,

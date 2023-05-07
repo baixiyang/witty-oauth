@@ -116,9 +116,13 @@ export class AuthController {
       },
       select: {
         user: true,
+        expiresAt: true,
       },
     });
-    if (!client2User) {
+    if (
+      !client2User ||
+      (client2User.expiresAt && client2User.expiresAt.getTime() < Date.now())
+    ) {
       session.userId = undefined;
       session.redirectUri = ctx.request.originalUrl;
       session.clientId = clientId;
