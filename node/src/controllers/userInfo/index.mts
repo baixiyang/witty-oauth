@@ -39,6 +39,7 @@ export class UserInfoController {
       username: true,
       email: true,
       phone: true,
+      isSystemAdmin: true,
     } as Record<string, boolean>;
     if (info.scope) {
       const scopes = info.scope.split(' ');
@@ -70,7 +71,6 @@ export class UserInfoController {
     }
     return {
       ...user,
-      isClientAdmin: user.client2UserArr?.[0]?.isClientAdmin,
       expiresAt: user.client2UserArr?.[0]?.expiresAt,
       client2UserArr: undefined,
     };

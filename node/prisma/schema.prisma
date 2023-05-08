@@ -19,6 +19,11 @@ model User {
   createdAt      DateTime      @default(now()) @db.Timestamp()
   updatedAt      DateTime      @updatedAt @db.Timestamp()
   client2UserArr Client2User[]
+  createClients  Client[]
+  isSystemAdmin  Boolean       @default(false)
+  creator        User?         @relation(fields: [creatorId], references: [id], name: "creator")
+  creatorId      String?       @db.VarChar(64)
+  createUsers    User[]        @relation(name: "creator")
 }
 
 model Client {
@@ -32,17 +37,18 @@ model Client {
   createdAt      DateTime      @default(now()) @db.Timestamp()
   updatedAt      DateTime      @updatedAt @db.Timestamp()
   client2UserArr Client2User[]
+  creator        User?         @relation(fields: [creatorId], references: [id])
+  creatorId      String?       @db.VarChar(64)
 }
 
 model Client2User {
-  client        Client    @relation(fields: [clientId], references: [id])
-  user          User      @relation(fields: [userId], references: [id])
-  clientId      String    @db.VarChar(64)
-  userId        String    @db.VarChar(64)
-  isClientAdmin Boolean   @default(false)
-  createdAt     DateTime  @default(now()) @db.Timestamp()
-  updatedAt     DateTime  @updatedAt @db.Timestamp()
-  expiresAt     DateTime? @db.Timestamp()
+  client    Client    @relation(fields: [clientId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  clientId  String    @db.VarChar(64)
+  userId    String    @db.VarChar(64)
+  createdAt DateTime  @default(now()) @db.Timestamp()
+  updatedAt DateTime  @updatedAt @db.Timestamp()
+  expiresAt DateTime? @db.Timestamp()
 
   @@id([clientId, userId])
 }
