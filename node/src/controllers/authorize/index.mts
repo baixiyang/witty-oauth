@@ -13,8 +13,7 @@ import { getResponseError } from '../../utils/error.mjs';
 
 @Controller('authorize')
 export class AuthController {
-  // 该接口在oauth2.1中规定只用于授权码模式,
-  // 由于在SSO场景中不太适用PKCE，暂时对是否 PKCE 不做限制，按oauth2.1标准处理是必须要 PKCE 的
+  // 在oauth2.1中规定: 授权接口只能用授权码模式授权,
   @Get()
   async authorize(
     @Query('response_type') @Required() responseType: string,
