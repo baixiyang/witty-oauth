@@ -27,18 +27,19 @@ model User {
 }
 
 model Client {
-  id             String        @id @unique @default(uuid()) @db.VarChar(256)
-  secret         String        @db.VarChar(256)
-  desc           String?       @db.VarChar(256)
-  type           ClientType    @default(THREE_PART)
-  redirectUris   String[]      @default([]) @db.VarChar(512)
-  grantTypes     GrantType[]   @default([authorization_code, refresh_token, client_credentials])
+  id                String        @id @unique @default(uuid()) @db.VarChar(256)
+  secret            String        @db.VarChar(256)
+  desc              String?       @db.VarChar(256)
+  type              ClientType    @default(THREE_PART)
+  redirectUris      String[]      @default([]) @db.VarChar(512)
+  grantTypes        GrantType[]   @default([authorization_code, refresh_token, client_credentials])
   // 客户端需要的授权范围
-  createdAt      DateTime      @default(now()) @db.Timestamp()
-  updatedAt      DateTime      @updatedAt @db.Timestamp()
-  client2UserArr Client2User[]
-  creator        User?         @relation(fields: [creatorId], references: [id])
-  creatorId      String?       @db.VarChar(64)
+  createdAt         DateTime      @default(now()) @db.Timestamp()
+  updatedAt         DateTime      @updatedAt @db.Timestamp()
+  client2UserArr    Client2User[]
+  creator           User?         @relation(fields: [creatorId], references: [id])
+  creatorId         String?       @db.VarChar(64)
+  userAuthorityDesc String?       @db.VarChar(512)
 }
 
 model Client2User {
@@ -49,6 +50,7 @@ model Client2User {
   createdAt DateTime  @default(now()) @db.Timestamp()
   updatedAt DateTime  @updatedAt @db.Timestamp()
   expiresAt DateTime? @db.Timestamp()
+  authority String?   @db.VarChar(256)
 
   @@id([clientId, userId])
 }
