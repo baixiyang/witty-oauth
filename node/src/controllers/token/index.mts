@@ -29,7 +29,7 @@ export class TokenController {
   async getToken(
     @Query('client_id') @Required() clientId: string,
     @Query('client_secret') @Required() clientSecret: string,
-    @Query('grant_type') @Required() grantType: string,
+    @Query('grant_type') @Required() grantType: GrantType,
     @Query('code') code: string | undefined,
     @Query('code_verifier') codeVerifier: string | undefined,
     @Query('refresh_token') refreshToken: string | undefined
@@ -56,7 +56,7 @@ export class TokenController {
       );
     }
     // 判断grant_type是否合法
-    if (!client.grantTypes.includes(grantType as GrantType)) {
+    if (!client.grantTypes.includes(grantType)) {
       throw getResponseError(
         ResponseErrorType.UNSUPPORTED_GRANT_TYPE,
         'grant_type is not supported!'
