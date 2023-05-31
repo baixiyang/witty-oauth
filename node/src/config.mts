@@ -19,7 +19,7 @@ export const CONFIG = {
   port: ENV === 'development' ? 5556 : 5555,
   iss:
     ENV === 'development'
-      ? 'http://127.0.0.1:5555'
+      ? `http://192.168.8.21:5555`
       : 'https://auth.wittyna.com',
   jwtPrivateKey: fs.readFileSync(require.resolve('./pem/private.pem')),
   jwtPublicKey: fs.readFileSync(require.resolve('./pem/public.pem')),
