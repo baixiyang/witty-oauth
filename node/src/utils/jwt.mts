@@ -31,7 +31,7 @@ export function getJwtInfo(jwt_: string): JwtPayload | undefined {
 }
 
 export function isJwt(jwt: string) {
-  return jwt.indexOf('.') > 1;
+  return jwt.indexOf('.') > -1;
 }
 interface JwtPayload extends BaseJwtPayload {
   userId: string;
