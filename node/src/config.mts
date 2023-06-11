@@ -16,7 +16,7 @@ export const CONFIG = {
   refreshTokenLifeTime: 60 * 60 * 24 * 30,
   jwtLifeTime: 60 * 60,
   sessionLeftTime: 60 * 60 * 24,
-  port: ENV === 'development' ? 5556 : 5555,
+  port: ENV === 'development' ? 5554 : 5555,
   iss:
     ENV === 'development'
       ? `http://192.168.8.21:5555`
