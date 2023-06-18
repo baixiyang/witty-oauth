@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import { createRequire } from 'module';
 import { dirname } from 'path';
-const require = createRequire(import.meta.url);
 import process from 'node:process';
 const ENV = process.env.ENV;
 export const CONFIG = {
@@ -21,7 +20,11 @@ export const CONFIG = {
     ENV === 'development'
       ? `http://192.168.8.21:5555`
       : 'https://auth.wittyna.com',
-  jwtPrivateKey: fs.readFileSync(require.resolve('./pem/private.pem')),
-  jwtPublicKey: fs.readFileSync(require.resolve('./pem/public.pem')),
+  jwtPrivateKey: fs.readFileSync(
+    createRequire(import.meta.url).resolve('./pem/private.pem')
+  ),
+  jwtPublicKey: fs.readFileSync(
+    createRequire(import.meta.url).resolve('./pem/public.pem')
+  ),
   uiRoot: dirname(new URL(import.meta.url).pathname) + '/ui',
 };

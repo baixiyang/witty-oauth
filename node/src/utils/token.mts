@@ -106,4 +106,4 @@ export async function clearAllTokenOfUser(userId: string) {
 }
 
 export const ACCESS_TOKEN_REG =
-  /^Bearer [a-f0-9]{8}\-([a-f0-9]{4}\-){3}[a-f0-9]{12}$/;
+  /^Bearer [a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/;
