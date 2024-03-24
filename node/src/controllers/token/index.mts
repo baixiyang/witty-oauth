@@ -184,7 +184,6 @@ export class TokenController {
             error: 'user permission of client is expired !',
           });
         }
-
         const accessToken = await setAccessToken({
           clientId: info.clientId,
           userId: info.userId,
